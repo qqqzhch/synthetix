@@ -16,9 +16,9 @@ const {
 const stringify = input => JSON.stringify(input, null, '\t') + '\n';
 
 const ensureNetwork = network => {
-	if (!/^(local|kovan|rinkeby|ropsten|mainnet)$/.test(network)) {
+	if (!/^(local|kovan|rinkeby|ropsten|mainnet|huobi)$/.test(network)) {
 		throw Error(
-			`Invalid network name of "${network}" supplied. Must be one of local, kovan, rinkeby, ropsten or mainnet`
+			`Invalid network name of "${network}" supplied. Must be one of local, kovan, rinkeby, ropsten or mainnet or huobi`
 		);
 	}
 };
@@ -67,19 +67,19 @@ const loadAndCheckRequiredSources = ({ deploymentPath, network }) => {
 };
 
 const loadConnections = ({ network }) => {
-	if (network !== 'local' && !process.env.INFURA_PROJECT_ID) {
-		throw Error('Missing .env key of INFURA_PROJECT_ID. Please add and retry.');
-	}
+	// if (network !== 'local') {
+	// 	throw Error('Missing .env key of INFURA_PROJECT_ID. Please add and retry.');
+	// }
 
 	const providerUrl =
 		network === 'local'
-			? 'http://127.0.0.1:8545'
-			: `https://${network}.infura.io/v3/${process.env.INFURA_PROJECT_ID}`;
+			? 'https://http-testnet.hecochain.com'
+			: `https://http-testnet.hecochain.com`;
 	const privateKey = process.env.DEPLOY_PRIVATE_KEY;
 	const etherscanUrl =
 		network === 'mainnet'
-			? 'https://api.etherscan.io/api'
-			: `https://api-${network}.etherscan.io/api`;
+			? 'https://http-testnet.hecochain.com/api'
+			: `https://http-testnet.hecochain.com/api`;
 
 	const etherscanLinkPrefix = `https://${network !== 'mainnet' ? network + '.' : ''}etherscan.io`;
 	return { providerUrl, privateKey, etherscanUrl, etherscanLinkPrefix };
@@ -97,10 +97,10 @@ const confirmAction = prompt =>
 	});
 
 const appendOwnerActionGenerator = ({ ownerActions, ownerActionsFile, etherscanLinkPrefix }) => ({
-	key,
-	action,
-	target,
-}) => {
+																									 key,
+																									 action,
+																									 target,
+																								 }) => {
 	ownerActions[key] = {
 		target,
 		action,
@@ -119,21 +119,21 @@ let _dryRunCounter = 0;
  * @returns transaction hash if successful, true if user completed, or falsy otherwise
  */
 const performTransactionalStep = async ({
-	account,
-	contract,
-	target,
-	read,
-	readArg, // none, 1 or an array of args, array will be spread into params
-	expected,
-	write,
-	writeArg, // none, 1 or an array of args, array will be spread into params
-	gasLimit,
-	gasPrice,
-	etherscanLinkPrefix,
-	ownerActions,
-	ownerActionsFile,
-	dryRun,
-}) => {
+											account,
+											contract,
+											target,
+											read,
+											readArg, // none, 1 or an array of args, array will be spread into params
+											expected,
+											write,
+											writeArg, // none, 1 or an array of args, array will be spread into params
+											gasLimit,
+											gasPrice,
+											etherscanLinkPrefix,
+											ownerActions,
+											ownerActionsFile,
+											dryRun,
+										}) => {
 	const action = `${contract}.${write}(${writeArg})`;
 
 	// check to see if action required
@@ -202,8 +202,8 @@ const performTransactionalStep = async ({
 			await confirmAction(
 				redBright(
 					`YOUR TASK: Invoke ${write}(${argumentsForWriteFunction}) via ${etherscanLinkPrefix}/address/` +
-						target.options.address +
-						'#writeContract'
+					target.options.address +
+					'#writeContract'
 				) + '\nPlease enter Y when the transaction has been mined and not earlier. '
 			);
 

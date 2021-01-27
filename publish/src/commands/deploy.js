@@ -52,18 +52,18 @@ const DEFAULTS = {
 };
 
 const deploy = async ({
-	addNewSynths,
-	gasPrice = DEFAULTS.gasPrice,
-	methodCallGasLimit = DEFAULTS.methodCallGasLimit,
-	contractDeploymentGasLimit = DEFAULTS.contractDeploymentGasLimit,
-	network = DEFAULTS.network,
-	buildPath = DEFAULTS.buildPath,
-	deploymentPath,
-	oracleExrates,
-	privateKey,
-	yes,
-	dryRun = false,
-} = {}) => {
+						  addNewSynths,
+						  gasPrice = DEFAULTS.gasPrice,
+						  methodCallGasLimit = DEFAULTS.methodCallGasLimit,
+						  contractDeploymentGasLimit = DEFAULTS.contractDeploymentGasLimit,
+						  network = DEFAULTS.network,
+						  buildPath = DEFAULTS.buildPath,
+						  deploymentPath,
+						  oracleExrates,
+						  privateKey,
+						  yes,
+						  dryRun = false,
+					  } = {}) => {
 	ensureNetwork(network);
 	ensureDeploymentPath(deploymentPath);
 
@@ -90,9 +90,9 @@ const deploy = async ({
 	if (missingDeployments.length) {
 		throw Error(
 			`Cannot use existing contracts for deployment as addresses not found for the following contracts on ${network}:\n` +
-				missingDeployments.join('\n') +
-				'\n' +
-				gray(`Used: ${deploymentFile} as source`)
+			missingDeployments.join('\n') +
+			'\n' +
+			gray(`Used: ${deploymentFile} as source`)
 		);
 	}
 
@@ -170,7 +170,7 @@ const deploy = async ({
 		currentLastMintEvent =
 			inflationStartDate + currentWeekOfInflation * secondsInWeek + mintingBuffer;
 	} catch (err) {
-		if (network === 'local') {
+		if (network !== 'local') {
 			currentSynthetixSupply = w3utils.toWei((100e6).toString());
 			currentWeekOfInflation = 0;
 			currentLastMintEvent = 0;
@@ -189,7 +189,7 @@ const deploy = async ({
 		const oldFeePool = getExistingContract({ contract: 'FeePool' });
 		currentExchangeFee = await oldFeePool.methods.exchangeFeeRate().call();
 	} catch (err) {
-		if (network === 'local') {
+		if (network !== 'local') {
 			currentExchangeFee = w3utils.toWei('0.003'.toString());
 		} else {
 			console.error(
@@ -202,6 +202,7 @@ const deploy = async ({
 		}
 	}
 
+	// 获取snx初始价格0.2ETH
 	try {
 		oldExrates = getExistingContract({ contract: 'ExchangeRates' });
 		currentSynthetixPrice = await oldExrates.methods.rateForCurrency(toBytes32('SNX')).call();
@@ -209,8 +210,9 @@ const deploy = async ({
 			oracleExrates = await oldExrates.methods.oracle().call();
 		}
 	} catch (err) {
-		if (network === 'local') {
-			currentSynthetixPrice = w3utils.toWei('0.2');
+		if (network !== 'local') {
+			// TODO NOTE: huobi now lamb price
+			currentSynthetixPrice = w3utils.toWei('0.02');
 			oracleExrates = account;
 			oldExrates = undefined; // unset to signify that a fresh one will be deployed
 		} else {
@@ -287,8 +289,8 @@ const deploy = async ({
 						.map(([contract]) => contract)
 						.join(', ')}` + `\nIt will also set proxy targets and add synths to Synthetix.\n`
 				) +
-					gray('-'.repeat(50)) +
-					'\nDo you want to continue? (y/n) '
+				gray('-'.repeat(50)) +
+				'\nDo you want to continue? (y/n) '
 			);
 		} catch (err) {
 			console.log(gray('Operation cancelled'));
@@ -318,9 +320,9 @@ const deploy = async ({
 			name,
 			address,
 			source,
-			link: `https://${network !== 'mainnet' ? network + '.' : ''}etherscan.io/address/${
+			link: `https://scan-testnet.hecochain.com/address/${
 				deployer.deployedContracts[name].options.address
-			}`,
+				}`,
 			timestamp,
 			txn,
 			network,
@@ -370,16 +372,19 @@ const deploy = async ({
 			dryRun,
 		});
 
+	// TODO 数学函数
 	await deployContract({
 		name: 'SafeDecimalMath',
 	});
 
+	// TODO 数学函数
 	await deployContract({
 		name: 'Math',
 	});
 
 	const addressOf = c => (c ? c.options.address : '');
 
+	// TODO 保存各个功能合约地址
 	const addressResolver = await deployContract({
 		name: 'AddressResolver',
 		args: [account],
@@ -387,13 +392,17 @@ const deploy = async ({
 
 	const resolverAddress = addressOf(addressResolver);
 
+	// TODO SNX -> LAMB
+	// TODO 所有币种的单价,从预言机中获取
 	const exchangeRates = await deployContract({
 		name: 'ExchangeRates',
 		args: [account, oracleExrates, [toBytes32('SNX')], [currentSynthetixPrice]],
 	});
 
+	// TODO mainnet -> huobi
 	// Set exchangeRates.stalePeriod to 1 sec if mainnet
-	if (exchangeRates && config['ExchangeRates'].deploy && network === 'mainnet') {
+	// TODO 如果是火币网络,直接将stalePeriod设置为1秒
+	if (exchangeRates && config['ExchangeRates'].deploy && network === 'huobi') {
 		const rateStalePeriod = 1;
 		await runStep({
 			contract: 'ExchangeRates',
@@ -590,6 +599,7 @@ const deploy = async ({
 
 	// only reset token state if redeploying
 	if (tokenStateSynthetix && config['TokenStateSynthetix'].deploy) {
+		// TODO maybe to zero
 		const initialIssuance = w3utils.toWei('100000000');
 		await runStep({
 			contract: 'TokenStateSynthetix',
@@ -667,7 +677,8 @@ const deploy = async ({
 	if (config['Synthetix'].deploy || config['SynthetixEscrow'].deploy) {
 		// Note: currently on mainnet SynthetixEscrow.methods.synthetix() does NOT exist
 		// it is "havven" and the ABI we have here is not sufficient
-		if (network === 'mainnet') {
+		// TODO mainnet -> huobi
+		if (network === 'huobi') {
 			appendOwnerAction({
 				key: `SynthetixEscrow.setHavven(Synthetix)`,
 				target: addressOf(synthetixEscrow),
@@ -792,7 +803,7 @@ const deploy = async ({
 				const oldSynth = getExistingContract({ contract: `Synth${currencyKey}` });
 				originalTotalSupply = await oldSynth.methods.totalSupply().call();
 			} catch (err) {
-				if (network !== 'local') {
+				if (network === 'local') {
 					// only throw if not local - allows local environments to handle both new
 					// and updating configurations
 					throw err;
@@ -812,10 +823,10 @@ const deploy = async ({
 				await confirmAction(
 					yellow(
 						`⚠⚠⚠ WARNING: Please confirm - ${network}:\n` +
-							`Synth${currencyKey} totalSupply is ${originalTotalSupply} \n`
+						`Synth${currencyKey} totalSupply is ${originalTotalSupply} \n`
 					) +
-						gray('-'.repeat(50)) +
-						'\nDo you want to continue? (y/n) '
+					gray('-'.repeat(50)) +
+					'\nDo you want to continue? (y/n) '
 				);
 			} catch (err) {
 				console.log(gray('Operation cancelled'));
@@ -971,7 +982,7 @@ const deploy = async ({
 						console.log(
 							gray(
 								`Detected an existing inverted synth for ${currencyKey} with identical parameters and a newer ExchangeRates. ` +
-									`Persisting its frozen status (${currentRateIsFrozen}) and if frozen, then freeze rate at upper (${freezeAtUpperLimit}) or lower (${!freezeAtUpperLimit}).`
+								`Persisting its frozen status (${currentRateIsFrozen}) and if frozen, then freeze rate at upper (${freezeAtUpperLimit}) or lower (${!freezeAtUpperLimit}).`
 							)
 						);
 
@@ -996,7 +1007,7 @@ const deploy = async ({
 					console.log(
 						gray(
 							`Inverted synth at ${currencyKey} has 0 total supply and its inverted parameters have changed. ` +
-								`Proceeding to reconfigure its parameters as instructed, unfreezing it if currently frozen.`
+							`Proceeding to reconfigure its parameters as instructed, unfreezing it if currently frozen.`
 						)
 					);
 					// Then a new inverted synth is being added (as there's no existing supply)
@@ -1007,8 +1018,8 @@ const deploy = async ({
 					console.log(
 						redBright(
 							`⚠⚠⚠ WARNING: The parameters for the inverted synth ${currencyKey} ` +
-								`have changed and it has non-zero totalSupply. This use-case is not supported by the deploy script. ` +
-								`This should be done as a purge() and setInversePricing() separately`
+							`have changed and it has non-zero totalSupply. This use-case is not supported by the deploy script. ` +
+							`This should be done as a purge() and setInversePricing() separately`
 						)
 					);
 				}
@@ -1061,7 +1072,7 @@ const deploy = async ({
 
 		// Ensure sETH uniswap exchange address on arbRewarder set
 		const requiredUniswapExchange = '0xe9Cf7887b93150D4F2Da7dFc6D502B216438F244';
-		const requiredSynthAddress = proxysETHAddress;
+		// const requiredSynthAddress = proxysETHAddress;
 		await runStep({
 			contract: 'ArbRewarder',
 			target: arbRewarder,
@@ -1072,14 +1083,15 @@ const deploy = async ({
 		});
 
 		// Ensure sETH proxy address on arbRewarder set
-		await runStep({
-			contract: 'ArbRewarder',
-			target: arbRewarder,
-			read: 'synth',
-			expected: input => input === requiredSynthAddress,
-			write: 'setSynthAddress',
-			writeArg: requiredSynthAddress,
-		});
+		//
+		// await runStep({
+		// 	contract: 'ArbRewarder',
+		// 	target: arbRewarder,
+		// 	read: 'synth',
+		// 	expected: input => input === requiredSynthAddress,
+		// 	write: 'setSynthAddress',
+		// 	writeArg: requiredSynthAddress,
+		// });
 	}
 
 	// --------------------
@@ -1121,7 +1133,7 @@ const deploy = async ({
 					'SynthetixEscrow',
 					'SynthetixState',
 					'SynthsUSD',
-					'SynthsETH',
+					// 'SynthsETH',
 				].map(toBytes32),
 				[
 					addressOf(feePoolDelegateApprovals),
@@ -1142,7 +1154,7 @@ const deploy = async ({
 					addressOf(synthetixEscrow),
 					addressOf(synthetixState),
 					addressOf(deployer.deployedContracts['SynthsUSD']),
-					addressOf(deployer.deployedContracts['SynthsETH']),
+					// addressOf(deployer.deployedContracts['SynthsETH']),
 				],
 			],
 		});

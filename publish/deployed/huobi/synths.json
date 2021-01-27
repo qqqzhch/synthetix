@@ -1,0 +1,9 @@
+[
+	{
+		"name": "sUSD",
+		"asset": "USD",
+		"category": "forex",
+		"sign": "$",
+		"desc": "US Dollars"
+	}
+]
