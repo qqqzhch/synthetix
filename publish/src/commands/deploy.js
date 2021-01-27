@@ -1163,10 +1163,10 @@ const deploy = async ({
 	// ----------------
 	// DappMaintenance setup
 	// ----------------
-	await deployContract({
-		name: 'DappMaintenance',
-		args: [account],
-	});
+	// await deployContract({
+	// 	name: 'DappMaintenance',
+	// 	args: [account],
+	// });
 
 	console.log(green(`\nSuccessfully deployed ${newContractsDeployed.length} contracts!\n`));
 
