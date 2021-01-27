@@ -1092,7 +1092,7 @@ const deploy = async ({
 		// 	write: 'setSynthAddress',
 		// 	writeArg: requiredSynthAddress,
 		// });
-	}
+	// }
 
 	// --------------------
 	// EtherCollateral Setup
