@@ -8,5 +8,5 @@ pragma solidity 0.4.25;
 interface ISynthetixProxy {
     function proxyToMint(address account, uint value) external view returns (uint);
 
-	function proxyToBurn(address account, uint value) external view returns (uint);
+    function proxyToBurn(address account, uint value) external view returns (uint);
 }
