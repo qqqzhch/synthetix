@@ -287,7 +287,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
         )
     {
         // What is the value of their SNX balance in the destination currency?
-        uint destinationValue = exchangeRates().effectiveValue(TOKEN_SYMBOL, collateral(_issuer), sUSD);
+        uint destinationValue = exchangeRates().effectiveValue("sLAMB", collateral(_issuer), sUSD);
 
         // They're allowed to issue up to issuanceRatio of that value
         return destinationValue.multiplyDecimal(synthetixState().issuanceRatio());
@@ -306,7 +306,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
         uint totalOwnedSynthetix = collateral(_issuer);
         if (totalOwnedSynthetix == 0) return 0;
 
-        uint debtBalance = debtBalanceOf(_issuer, TOKEN_SYMBOL);
+        uint debtBalance = debtBalanceOf(_issuer, "");
         return debtBalance.divideDecimalRound(totalOwnedSynthetix);
     }
 
@@ -427,7 +427,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
     function transferableSynthetix(address account)
         public
         view
-        rateNotStale(TOKEN_SYMBOL) // SNX is not a synth so is not checked in totalIssuedSynths
+        rateNotStale("sLAMB") // SNX is not a synth so is not checked in totalIssuedSynths
         returns (uint)
     {
         // How many SNX do they have, excluding escrow?
@@ -439,7 +439,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
         // Assuming issuance ratio is 20%, then issuing 20 SNX of value would require
         // 100 SNX to be locked in their wallet to maintain their collateralisation ratio
         // The locked synthetix value can exceed their balance.
-        uint lockedSynthetixValue = debtBalanceOf(account, TOKEN_SYMBOL).divideDecimalRound(synthetixState().issuanceRatio());
+        uint lockedSynthetixValue = debtBalanceOf(account, "sLAMB").divideDecimalRound(synthetixState().issuanceRatio());
 
         // If we exceed the balance, no SNX are transferable, otherwise the difference is.
         if (lockedSynthetixValue >= balance) {
@@ -510,7 +510,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
     function burn(address account, uint value) external returns (uint) {
         require(account != address(0), "Account not set");
 
-		uint availableAmount = transferableSynthetix(address);
+		uint availableAmount = transferableSynthetix(account);
 
 		require(value <= availableAmount, "Cannot transfer staked or escrowed sLAMB");
 
