@@ -11,7 +11,7 @@ import "./interfaces/IFeePool.sol";
 import "./interfaces/IRewardsDistribution.sol";
 import "./interfaces/IExchanger.sol";
 import "./interfaces/IIssuer.sol";
-import "./interfaces/ISynthetixProxy.sol"
+import "./interfaces/ISynthetixProxy.sol";
 
 
 /**
@@ -119,7 +119,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
             // minus total issued synths from Ether Collateral from sETH.totalSupply()
             // if (excludeEtherCollateral && availableSynths[i] == synths["sETH"]) {
             //     totalSynths = totalSynths.sub(etherCollateral().totalIssuedSynths());
-            }
+//            }
 
             uint synthValue = totalSynths.multiplyDecimalRound(rates[i]);
             total = total.add(synthValue);
@@ -382,19 +382,20 @@ contract Synthetix is ExternStateToken, MixinResolver {
         view
         returns (
             // Don't need to check for synth existing or stale rates because maxIssuableSynths will do it for us.
-            uint maxIssuable,
-            uint alreadyIssued,
-            uint totalSystemDebt
+            uint,
+            uint,
+            uint
         )
     {
-        (alreadyIssued, totalSystemDebt) = debtBalanceOfAndTotalDebt(_issuer, sUSD);
-        maxIssuable = maxIssuableSynths(_issuer);
+        (uint alreadyIssued, uint totalSystemDebt) = debtBalanceOfAndTotalDebt(_issuer, sUSD);
+        uint maxIssuable = maxIssuableSynths(_issuer);
 
         if (alreadyIssued >= maxIssuable) {
             maxIssuable = 0;
         } else {
             maxIssuable = maxIssuable.sub(alreadyIssued);
         }
+        return (maxIssuable, alreadyIssued, totalSystemDebt);
     }
 
     /**
@@ -509,7 +510,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
     function burn(address account, uint value) external returns (uint) {
         require(account != address(0), "Account not set");
 
-		availableAmount = transferableSynthetix(address)
+		uint availableAmount = transferableSynthetix(address);
 
 		require(value <= availableAmount, "Cannot transfer staked or escrowed sLAMB");
 
