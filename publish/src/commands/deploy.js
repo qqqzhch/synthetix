@@ -396,14 +396,14 @@ const deploy = async ({
 	// TODO 所有币种的单价,从预言机中获取
 	const exchangeRates = await deployContract({
 		name: 'ExchangeRates',
-		args: [account, oracleExrates, [toBytes32('SNX')], [currentSynthetixPrice]],
+		args: [account, oracleExrates, [toBytes32('sLAMB')], [currentSynthetixPrice]],
 	});
 
 	// TODO mainnet -> huobi
 	// Set exchangeRates.stalePeriod to 1 sec if mainnet
 	// TODO 如果是火币网络,直接将stalePeriod设置为1秒
 	if (exchangeRates && config['ExchangeRates'].deploy && network === 'huobi') {
-		const rateStalePeriod = 1;
+		const rateStalePeriod = 100;
 		await runStep({
 			contract: 'ExchangeRates',
 			target: exchangeRates,
@@ -533,10 +533,10 @@ const deploy = async ({
 	});
 
 	// constructor(address _owner, uint _lastMintEvent, uint _currentWeek)
-	const supplySchedule = await deployContract({
-		name: 'SupplySchedule',
-		args: [account, currentLastMintEvent, currentWeekOfInflation],
-	});
+	// const supplySchedule = await deployContract({
+	// 	name: 'SupplySchedule',
+	// 	args: [account, currentLastMintEvent, currentWeekOfInflation],
+	// });
 
 	const proxySynthetix = await deployContract({
 		name: 'ProxySynthetix',
@@ -696,16 +696,16 @@ const deploy = async ({
 		}
 	}
 
-	if (supplySchedule && synthetix) {
-		await runStep({
-			contract: 'SupplySchedule',
-			target: supplySchedule,
-			read: 'synthetixProxy',
-			expected: input => input === addressOf(proxySynthetix),
-			write: 'setSynthetixProxy',
-			writeArg: addressOf(proxySynthetix),
-		});
-	}
+	// if (supplySchedule && synthetix) {
+	// 	await runStep({
+	// 		contract: 'SupplySchedule',
+	// 		target: supplySchedule,
+	// 		read: 'synthetixProxy',
+	// 		expected: input => input === addressOf(proxySynthetix),
+	// 		write: 'setSynthetixProxy',
+	// 		writeArg: addressOf(proxySynthetix),
+	// 	});
+	// }
 
 	// Setup Synthetix and deploy proxyERC20 for use in Synths
 	const proxyERC20Synthetix = await deployContract({
@@ -1032,55 +1032,55 @@ const deploy = async ({
 	// ----------------
 	// Depot setup
 	// ----------------
-	const depot = await deployContract({
-		name: 'Depot',
-		deps: ['ProxySynthetix', 'SynthsUSD', 'FeePool'],
-		args: [account, account, resolverAddress],
-	});
+	// const depot = await deployContract({
+	// 	name: 'Depot',
+	// 	deps: ['ProxySynthetix', 'SynthsUSD', 'FeePool'],
+	// 	args: [account, account, resolverAddress],
+	// });
 
 	// ----------------
 	// ArbRewarder setup
 	// ----------------
 
 	// ArbRewarder contract for sETH uniswap
-	const arbRewarder = await deployContract({
-		name: 'ArbRewarder',
-		deps: ['Synthetix', 'ExchangeRates'],
-		args: [account],
-	});
+	// const arbRewarder = await deployContract({
+	// 	name: 'ArbRewarder',
+	// 	deps: ['Synthetix', 'ExchangeRates'],
+	// 	args: [account],
+	// });
 
-	if (arbRewarder) {
-		// ensure exchangeRates on arbRewarder set
-		await runStep({
-			contract: 'ArbRewarder',
-			target: arbRewarder,
-			read: 'exchangeRates',
-			expected: input => input === addressOf(exchangeRates),
-			write: 'setExchangeRates',
-			writeArg: addressOf(exchangeRates),
-		});
+	// if (arbRewarder) {
+	// 	// ensure exchangeRates on arbRewarder set
+	// 	await runStep({
+	// 		contract: 'ArbRewarder',
+	// 		target: arbRewarder,
+	// 		read: 'exchangeRates',
+	// 		expected: input => input === addressOf(exchangeRates),
+	// 		write: 'setExchangeRates',
+	// 		writeArg: addressOf(exchangeRates),
+	// 	});
 
-		// Ensure synthetix ProxyERC20 on arbRewarder set
-		await runStep({
-			contract: 'ArbRewarder',
-			target: arbRewarder,
-			read: 'synthetixProxy',
-			expected: input => input === addressOf(proxyERC20Synthetix),
-			write: 'setSynthetix',
-			writeArg: addressOf(proxyERC20Synthetix),
-		});
+	// 	// Ensure synthetix ProxyERC20 on arbRewarder set
+	// 	await runStep({
+	// 		contract: 'ArbRewarder',
+	// 		target: arbRewarder,
+	// 		read: 'synthetixProxy',
+	// 		expected: input => input === addressOf(proxyERC20Synthetix),
+	// 		write: 'setSynthetix',
+	// 		writeArg: addressOf(proxyERC20Synthetix),
+	// 	});
 
-		// Ensure sETH uniswap exchange address on arbRewarder set
-		const requiredUniswapExchange = '0xe9Cf7887b93150D4F2Da7dFc6D502B216438F244';
-		// const requiredSynthAddress = proxysETHAddress;
-		await runStep({
-			contract: 'ArbRewarder',
-			target: arbRewarder,
-			read: 'uniswapAddress',
-			expected: input => input === requiredUniswapExchange,
-			write: 'setUniswapExchange',
-			writeArg: requiredUniswapExchange,
-		});
+	// 	// Ensure sETH uniswap exchange address on arbRewarder set
+	// 	const requiredUniswapExchange = '0xe9Cf7887b93150D4F2Da7dFc6D502B216438F244';
+	// 	// const requiredSynthAddress = proxysETHAddress;
+	// 	await runStep({
+	// 		contract: 'ArbRewarder',
+	// 		target: arbRewarder,
+	// 		read: 'uniswapAddress',
+	// 		expected: input => input === requiredUniswapExchange,
+	// 		write: 'setUniswapExchange',
+	// 		writeArg: requiredUniswapExchange,
+	// 	});
 
 		// Ensure sETH proxy address on arbRewarder set
 		//
@@ -1097,11 +1097,11 @@ const deploy = async ({
 	// --------------------
 	// EtherCollateral Setup
 	// --------------------
-	const etherCollateral = await deployContract({
-		name: 'EtherCollateral',
-		deps: ['AddressResolver'],
-		args: [account, resolverAddress],
-	});
+	// const etherCollateral = await deployContract({
+	// 	name: 'EtherCollateral',
+	// 	deps: ['AddressResolver'],
+	// 	args: [account, resolverAddress],
+	// });
 
 	// -------------------------
 	// Address Resolver imports
@@ -1116,8 +1116,8 @@ const deploy = async ({
 			writeArg: [
 				[
 					'DelegateApprovals',
-					'Depot',
-					'EtherCollateral',
+					// 'Depot',
+					// 'EtherCollateral',
 					'Exchanger',
 					'ExchangeRates',
 					'ExchangeState',
@@ -1125,10 +1125,10 @@ const deploy = async ({
 					'FeePoolEternalStorage',
 					'FeePoolState',
 					'Issuer',
-					'MultiCollateral',
+					// 'MultiCollateral',
 					'RewardEscrow',
 					'RewardsDistribution',
-					'SupplySchedule',
+					// 'SupplySchedule',
 					'Synthetix',
 					'SynthetixEscrow',
 					'SynthetixState',
@@ -1137,8 +1137,8 @@ const deploy = async ({
 				].map(toBytes32),
 				[
 					addressOf(feePoolDelegateApprovals),
-					addressOf(depot),
-					addressOf(etherCollateral),
+					// addressOf(depot),
+					// addressOf(etherCollateral),
 					addressOf(exchanger),
 					addressOf(exchangeRates),
 					addressOf(exchangeState),
@@ -1146,10 +1146,10 @@ const deploy = async ({
 					addressOf(feePoolEternalStorage),
 					addressOf(feePoolState),
 					addressOf(issuer),
-					addressOf(etherCollateral),
+					// addressOf(etherCollateral),
 					addressOf(rewardEscrow),
 					addressOf(rewardsDistribution),
-					addressOf(supplySchedule),
+					// addressOf(supplySchedule),
 					addressOf(synthetix),
 					addressOf(synthetixEscrow),
 					addressOf(synthetixState),
