@@ -13,6 +13,7 @@ import "./interfaces/IRewardsDistribution.sol";
 import "./interfaces/IExchanger.sol";
 import "./interfaces/IIssuer.sol";
 import "./interfaces/IEtherCollateral.sol";
+import "./interfaces/ISynthetixProxy.sol"
 
 
 /**
@@ -28,8 +29,8 @@ contract Synthetix is ExternStateToken, MixinResolver {
     mapping(bytes32 => Synth) public synths;
     mapping(address => bytes32) public synthsByAddress;
 
-    string constant TOKEN_NAME = "Synthetix Network Token";
-    string constant TOKEN_SYMBOL = "SNX";
+    string constant TOKEN_NAME = "Transgo Token";
+    string constant TOKEN_SYMBOL = "sLAMB";
     uint8 constant DECIMALS = 18;
     bytes32 constant sUSD = "sUSD";
 
@@ -55,9 +56,9 @@ contract Synthetix is ExternStateToken, MixinResolver {
         return IExchanger(resolver.requireAndGetAddress("Exchanger", "Missing Exchanger address"));
     }
 
-    function etherCollateral() internal view returns (IEtherCollateral) {
-        return IEtherCollateral(resolver.requireAndGetAddress("EtherCollateral", "Missing EtherCollateral address"));
-    }
+    // function etherCollateral() internal view returns (IEtherCollateral) {
+    //     return IEtherCollateral(resolver.requireAndGetAddress("EtherCollateral", "Missing EtherCollateral address"));
+    // }
 
     function issuer() internal view returns (IIssuer) {
         return IIssuer(resolver.requireAndGetAddress("Issuer", "Missing Issuer address"));
@@ -75,9 +76,13 @@ contract Synthetix is ExternStateToken, MixinResolver {
         return IFeePool(resolver.requireAndGetAddress("FeePool", "Missing FeePool address"));
     }
 
-    function supplySchedule() internal view returns (SupplySchedule) {
-        return SupplySchedule(resolver.requireAndGetAddress("SupplySchedule", "Missing SupplySchedule address"));
-    }
+	function synthetixProxy() internal view returns (ISynthetixProxy) {
+		return ISynthetixProxy(resolver.requireAndGetAddress("SynthetixProxy", "Missing SynthetixProxy address"));
+	}
+
+    // function supplySchedule() internal view returns (SupplySchedule) {
+    //     return SupplySchedule(resolver.requireAndGetAddress("SupplySchedule", "Missing SupplySchedule address"));
+    // }
 
     function rewardEscrow() internal view returns (ISynthetixEscrow) {
         return ISynthetixEscrow(resolver.requireAndGetAddress("RewardEscrow", "Missing RewardEscrow address"));
@@ -114,8 +119,8 @@ contract Synthetix is ExternStateToken, MixinResolver {
             uint totalSynths = availableSynths[i].totalSupply();
 
             // minus total issued synths from Ether Collateral from sETH.totalSupply()
-            if (excludeEtherCollateral && availableSynths[i] == synths["sETH"]) {
-                totalSynths = totalSynths.sub(etherCollateral().totalIssuedSynths());
+            // if (excludeEtherCollateral && availableSynths[i] == synths["sETH"]) {
+            //     totalSynths = totalSynths.sub(etherCollateral().totalIssuedSynths());
             }
 
             uint synthValue = totalSynths.multiplyDecimalRound(rates[i]);
@@ -225,7 +230,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
      */
     function transfer(address to, uint value) public optionalProxy returns (bool) {
         // Ensure they're not trying to exceed their staked SNX amount
-        require(value <= transferableSynthetix(messageSender), "Cannot transfer staked or escrowed SNX");
+        require(value <= transferableSynthetix(messageSender), "Cannot transfer staked or escrowed sLAMB");
 
         // Perform the transfer: if there is a problem an exception will be thrown in this call.
         _transfer_byProxy(messageSender, to, value);
@@ -238,7 +243,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
      */
     function transferFrom(address from, address to, uint value) public optionalProxy returns (bool) {
         // Ensure they're not trying to exceed their locked amount
-        require(value <= transferableSynthetix(from), "Cannot transfer staked or escrowed SNX");
+        require(value <= transferableSynthetix(from), "Cannot transfer staked or escrowed sLAMB");
 
         // Perform the transfer: if there is a problem,
         // an exception will be thrown in this call.
@@ -284,7 +289,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
         )
     {
         // What is the value of their SNX balance in the destination currency?
-        uint destinationValue = exchangeRates().effectiveValue("SNX", collateral(_issuer), sUSD);
+        uint destinationValue = exchangeRates().effectiveValue(TOKEN_SYMBOL, collateral(_issuer), sUSD);
 
         // They're allowed to issue up to issuanceRatio of that value
         return destinationValue.multiplyDecimal(synthetixState().issuanceRatio());
@@ -303,7 +308,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
         uint totalOwnedSynthetix = collateral(_issuer);
         if (totalOwnedSynthetix == 0) return 0;
 
-        uint debtBalance = debtBalanceOf(_issuer, "SNX");
+        uint debtBalance = debtBalanceOf(_issuer, TOKEN_SYMBOL);
         return debtBalance.divideDecimalRound(totalOwnedSynthetix);
     }
 
@@ -403,7 +408,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
     function transferableSynthetix(address account)
         public
         view
-        rateNotStale("SNX") // SNX is not a synth so is not checked in totalIssuedSynths
+        rateNotStale(TOKEN_SYMBOL) // SNX is not a synth so is not checked in totalIssuedSynths
         returns (uint)
     {
         // How many SNX do they have, excluding escrow?
@@ -415,7 +420,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
         // Assuming issuance ratio is 20%, then issuing 20 SNX of value would require
         // 100 SNX to be locked in their wallet to maintain their collateralisation ratio
         // The locked synthetix value can exceed their balance.
-        uint lockedSynthetixValue = debtBalanceOf(account, "SNX").divideDecimalRound(synthetixState().issuanceRatio());
+        uint lockedSynthetixValue = debtBalanceOf(account, TOKEN_SYMBOL).divideDecimalRound(synthetixState().issuanceRatio());
 
         // If we exceed the balance, no SNX are transferable, otherwise the difference is.
         if (lockedSynthetixValue >= balance) {
@@ -431,38 +436,70 @@ contract Synthetix is ExternStateToken, MixinResolver {
      * The mint() function is publicly callable by anyone. The caller will
      receive a minter reward as specified in supplySchedule.minterReward().
      */
-    function mint() external returns (bool) {
-        require(rewardsDistribution() != address(0), "RewardsDistribution not set");
+    // function mint() external returns (bool) {
+    //     require(rewardsDistribution() != address(0), "RewardsDistribution not set");
 
-        SupplySchedule _supplySchedule = supplySchedule();
-        IRewardsDistribution _rewardsDistribution = rewardsDistribution();
+    //     SupplySchedule _supplySchedule = supplySchedule();
+    //     IRewardsDistribution _rewardsDistribution = rewardsDistribution();
 
-        uint supplyToMint = _supplySchedule.mintableSupply();
-        require(supplyToMint > 0, "No supply is mintable");
+    //     uint supplyToMint = _supplySchedule.mintableSupply();
+    //     require(supplyToMint > 0, "No supply is mintable");
 
-        // record minting event before mutation to token supply
-        _supplySchedule.recordMintEvent(supplyToMint);
+    //     // record minting event before mutation to token supply
+    //     _supplySchedule.recordMintEvent(supplyToMint);
 
-        // Set minted SNX balance to RewardEscrow's balance
-        // Minus the minterReward and set balance of minter to add reward
-        uint minterReward = _supplySchedule.minterReward();
-        // Get the remainder
-        uint amountToDistribute = supplyToMint.sub(minterReward);
+    //     // Set minted SNX balance to RewardEscrow's balance
+    //     // Minus the minterReward and set balance of minter to add reward
+    //     uint minterReward = _supplySchedule.minterReward();
+    //     // Get the remainder
+    //     uint amountToDistribute = supplyToMint.sub(minterReward);
 
-        // Set the token balance to the RewardsDistribution contract
-        tokenState.setBalanceOf(_rewardsDistribution, tokenState.balanceOf(_rewardsDistribution).add(amountToDistribute));
-        emitTransfer(this, _rewardsDistribution, amountToDistribute);
+    //     // Set the token balance to the RewardsDistribution contract
+    //     tokenState.setBalanceOf(_rewardsDistribution, tokenState.balanceOf(_rewardsDistribution).add(amountToDistribute));
+    //     emitTransfer(this, _rewardsDistribution, amountToDistribute);
 
-        // Kick off the distribution of rewards
-        _rewardsDistribution.distributeRewards(amountToDistribute);
+    //     // Kick off the distribution of rewards
+    //     _rewardsDistribution.distributeRewards(amountToDistribute);
 
-        // Assign the minters reward.
-        tokenState.setBalanceOf(msg.sender, tokenState.balanceOf(msg.sender).add(minterReward));
-        emitTransfer(this, msg.sender, minterReward);
+    //     // Assign the minters reward.
+    //     tokenState.setBalanceOf(msg.sender, tokenState.balanceOf(msg.sender).add(minterReward));
+    //     emitTransfer(this, msg.sender, minterReward);
 
-        totalSupply = totalSupply.add(supplyToMint);
+    //     totalSupply = totalSupply.add(supplyToMint);
 
-        return true;
+    //     return true;
+    // }
+
+	/**
+     * @notice Mints the inflationary sLAMB supply. And set amount of balance to the given address.
+     * The mint function is callable only by synthetix proxy contract.
+     */
+    function mint(address account, uint value) external onlySynthetixProxy returns (uint) {
+        require(account != address(0), "Account not set");
+
+        //Assign amount of value to account.
+        tokenState.setBalanceOf(account, tokenState.balanceOf(account).add(value));
+        totalSupply = totalSupply.add(value);
+
+        return value;
+    }
+
+	/**
+     * @notice Burns the avaliable sLAMB supply. And set new amount of balance to the given address.
+     * The burn function is callable only by synthetix proxy contract.
+     */
+    function burn(address account, uint value) external onlySynthetixProxy returns (uint) {
+        require(account != address(0), "Account not set");
+
+		availableAmount = transferableSynthetix(address)
+
+		require(value <= availableAmount, "Cannot transfer staked or escrowed sLAMB");
+
+        //Assign amount of value to account.
+        tokenState.setBalanceOf(account, tokenState.balanceOf(account).sub(value));
+        totalSupply = totalSupply.sub(value);
+
+        return value;
     }
 
     // ========== MODIFIERS ==========
@@ -474,6 +511,11 @@ contract Synthetix is ExternStateToken, MixinResolver {
 
     modifier onlyExchanger() {
         require(msg.sender == address(exchanger()), "Only the exchanger contract can invoke this function");
+        _;
+    }
+
+	modifier onlySynthetixProxy() {
+        require(msg.sender == address(synthetixProxy()), "Only the synthetix proxy contract can invoke this function");
         _;
     }
 
