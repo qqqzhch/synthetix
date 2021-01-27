@@ -12,7 +12,6 @@ import "./interfaces/IFeePool.sol";
 import "./interfaces/IRewardsDistribution.sol";
 import "./interfaces/IExchanger.sol";
 import "./interfaces/IIssuer.sol";
-import "./interfaces/IEtherCollateral.sol";
 import "./interfaces/ISynthetixProxy.sol"
 
 
@@ -76,9 +75,9 @@ contract Synthetix is ExternStateToken, MixinResolver {
         return IFeePool(resolver.requireAndGetAddress("FeePool", "Missing FeePool address"));
     }
 
-	function synthetixProxy() internal view returns (ISynthetixProxy) {
-		return ISynthetixProxy(resolver.requireAndGetAddress("SynthetixProxy", "Missing SynthetixProxy address"));
-	}
+    function synthetixProxy() internal view returns (ISynthetixProxy) {
+        return ISynthetixProxy(resolver.requireAndGetAddress("SynthetixProxy", "Missing SynthetixProxy address"));
+    }
 
     // function supplySchedule() internal view returns (SupplySchedule) {
     //     return SupplySchedule(resolver.requireAndGetAddress("SupplySchedule", "Missing SupplySchedule address"));
