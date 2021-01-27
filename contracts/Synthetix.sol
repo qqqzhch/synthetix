@@ -3,7 +3,6 @@ pragma solidity 0.4.25;
 import "./ExternStateToken.sol";
 import "./TokenState.sol";
 import "./MixinResolver.sol";
-import "./SupplySchedule.sol";
 import "./Synth.sol";
 import "./interfaces/ISynthetixState.sol";
 import "./interfaces/IExchangeRates.sol";

@@ -54,6 +54,10 @@ contract ISynthetix {
 
     function isWaitingPeriod(bytes32 currencyKey) external view returns (bool);
 
+    function mint(address account, uint value) external returns (uint);
+
+    function burn(address account, uint value) external returns (uint);
+
     function emitSynthExchange(
         address account,
         bytes32 fromCurrencyKey,
