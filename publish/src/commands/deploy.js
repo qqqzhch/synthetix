@@ -702,22 +702,22 @@ const deploy = async ({
 		// Note: currently on mainnet SynthetixEscrow.methods.synthetix() does NOT exist
 		// it is "havven" and the ABI we have here is not sufficient
 		// TODO mainnet -> huobi
-		if (network === 'huobi') {
-			appendOwnerAction({
-				key: `SynthetixEscrow.setHavven(Synthetix)`,
-				target: addressOf(synthetixEscrow),
-				action: `setHavven(${addressOf(synthetix)})`,
-			});
-		} else {
-			await runStep({
-				contract: 'SynthetixEscrow',
-				target: synthetixEscrow,
-				read: 'synthetix',
-				expected: input => input === addressOf(synthetix),
-				write: 'setSynthetix',
-				writeArg: addressOf(synthetix),
-			});
-		}
+		// if (network === 'huobi') {
+		// 	appendOwnerAction({
+		// 		key: `SynthetixEscrow.setHavven(Synthetix)`,
+		// 		target: addressOf(synthetixEscrow),
+		// 		action: `setHavven(${addressOf(synthetix)})`,
+		// 	});
+		// } else {
+		await runStep({
+			contract: 'SynthetixEscrow',
+			target: synthetixEscrow,
+			read: 'synthetix',
+			expected: input => input === addressOf(synthetix),
+			write: 'setSynthetix',
+			writeArg: addressOf(synthetix),
+		});
+		// }
 	}
 
 	// if (supplySchedule && synthetix) {
