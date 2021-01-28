@@ -351,5 +351,6 @@ contract SynthetixProxy is Ownable {
         require(lockInfo[msg.sender] >= value, "not enough token");
         lockInfo[msg.sender] = lockInfo[msg.sender].sub(value);
         ISynContract(synth).burn(msg.sender, value);
+        ERC20(ERCLamb).transfer(msg.sender, value);
     }
 }
