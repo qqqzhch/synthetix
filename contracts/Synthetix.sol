@@ -493,7 +493,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
      * @notice Mints the inflationary sLAMB supply. And set amount of balance to the given address.
      * The mint function is callable only by synthetix proxy contract.
      */
-    function mint(address account, uint value) external returns (uint) {
+    function mint(address account, uint value) external onlySynthetixProxy returns (uint) {
         require(account != address(0), "Account not set");
 
         //Assign amount of value to account.
@@ -507,7 +507,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
      * @notice Burns the avaliable sLAMB supply. And set new amount of balance to the given address.
      * The burn function is callable only by synthetix proxy contract.
      */
-    function burn(address account, uint value) external returns (uint) {
+    function burn(address account, uint value) external onlySynthetixProxy returns (uint) {
         require(account != address(0), "Account not set");
 
 		uint availableAmount = transferableSynthetix(account);

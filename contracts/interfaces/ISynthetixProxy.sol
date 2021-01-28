@@ -6,7 +6,7 @@ pragma solidity 0.4.25;
  * @notice Abstract contract to hold public getters
  */
 interface ISynthetixProxy {
-    function proxyToMint(address account, uint value) external view returns (uint);
+    function lock(uint value) public;
 
-    function proxyToBurn(address account, uint value) external view returns (uint);
+    function unlock(uint value) public;
 }

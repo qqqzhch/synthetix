@@ -403,7 +403,7 @@ const deploy = async ({
 	// Set exchangeRates.stalePeriod to 1 sec if mainnet
 	// TODO 如果是火币网络,直接将stalePeriod设置为1秒
 	if (exchangeRates && config['ExchangeRates'].deploy && network === 'huobi') {
-		const rateStalePeriod = 100;
+		const rateStalePeriod = 100000;
 		await runStep({
 			contract: 'ExchangeRates',
 			target: exchangeRates,
@@ -561,6 +561,30 @@ const deploy = async ({
 			resolverAddress,
 		],
 	});
+
+	const synthetixProxy = await deployContract({
+			name: 'SynthetixProxy',
+	})
+
+	if (synthetixProxy) {
+		await runStep({
+			contract: 'SynthetixProxy',
+			target: synthetixProxy,
+			expected: input => input === addressOf(synthetix),
+			write: 'setSynthAddress',
+			writeArg: addressOf(synthetix),
+		});
+	}
+
+	if (synthetixProxy) {
+		await runStep({
+			contract: 'SynthetixProxy',
+			target: synthetixProxy,
+			expected: input => input === '0x2F794e75876744533d6883C50E0BAE62633B0216',
+			write: 'setERCLambAddress',
+			writeArg: '0x2F794e75876744533d6883C50E0BAE62633B0216',
+		});
+	}
 
 	if (proxySynthetix && synthetix) {
 		await runStep({
@@ -1133,6 +1157,7 @@ const deploy = async ({
 					'SynthetixEscrow',
 					'SynthetixState',
 					'SynthsUSD',
+					'SynthetixProxy',
 					// 'SynthsETH',
 				].map(toBytes32),
 				[
@@ -1154,6 +1179,7 @@ const deploy = async ({
 					addressOf(synthetixEscrow),
 					addressOf(synthetixState),
 					addressOf(deployer.deployedContracts['SynthsUSD']),
+					addressOf(synthetixProxy),
 					// addressOf(deployer.deployedContracts['SynthsETH']),
 				],
 			],
