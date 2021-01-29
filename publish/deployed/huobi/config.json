@@ -45,7 +45,7 @@
 		"deploy": false
 	},
 	"SynthtUSD": {
-		"deploy": false
+		"deploy": true
 	},
 	"ProxyERC20": {
 		"deploy": false

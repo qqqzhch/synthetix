@@ -562,29 +562,33 @@ const deploy = async ({
 		],
 	});
 
-	const synthetixProxy = await deployContract({
-			name: 'SynthetixProxy',
-	})
+	// if (synthetixProxy) {
+	// 	await runStep({
+	// 		contract: 'SynthetixProxy',
+	// 		target: synthetixProxy,
+	// 		expected: input => input === addressOf(synthetix),
+	// 		write: 'setSynthAddress',
+	// 		writeArg: addressOf(synthetix),
+	// 	});
+	// }
 
-	if (synthetixProxy) {
-		await runStep({
-			contract: 'SynthetixProxy',
-			target: synthetixProxy,
-			expected: input => input === addressOf(synthetix),
-			write: 'setSynthAddress',
-			writeArg: addressOf(synthetix),
-		});
-	}
+	// if (synthetixProxy) {
+	// 	await runStep({
+	// 		contract: 'SynthetixProxy',
+	// 		target: synthetixProxy,
+	// 		expected: input => input === '0xf214a4639dd86c98e0420c7c4dbeb324027224de',
+	// 		write: 'setERCLambAddress',
+	// 		writeArg: '0xf214a4639dd86c98e0420c7c4dbeb324027224de',
+	// 	});
+    // }
 
-	if (synthetixProxy) {
-		await runStep({
-			contract: 'SynthetixProxy',
-			target: synthetixProxy,
-			expected: input => input === '0xf214a4639dd86c98e0420c7c4dbeb324027224de',
-			write: 'setERCLambAddress',
-			writeArg: '0xf214a4639dd86c98e0420c7c4dbeb324027224de',
-		});
-	}
+    const synthetixProxy = await deployContract({
+        name: 'SynthetixProxy',
+        args: [
+            addressOf(synthetix),
+           "0xf214a4639dd86c98e0420c7c4dbeb324027224de",
+        ],
+})
 
 	if (proxySynthetix && synthetix) {
 		await runStep({
