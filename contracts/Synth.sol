@@ -16,7 +16,7 @@ contract Synth is ExternStateToken, MixinResolver {
 
     uint8 public constant DECIMALS = 18;
 
-    // Where fees are pooled in sUSD
+    // Where fees are pooled in tUSD
     address public constant FEE_ADDRESS = 0xfeEFEEfeefEeFeefEEFEEfEeFeefEEFeeFEEFEeF;
 
     /* ========== CONSTRUCTOR ========== */
@@ -46,7 +46,7 @@ contract Synth is ExternStateToken, MixinResolver {
     function transfer(address to, uint value) public optionalProxy returns (bool) {
         _ensureCanTransfer(messageSender, value);
 
-        // transfers to FEE_ADDRESS will be exchanged into sUSD and recorded as fee
+        // transfers to FEE_ADDRESS will be exchanged into tUSD and recorded as fee
         if (to == FEE_ADDRESS) {
             return _transferToFeeAddress(to, value);
         }
@@ -91,21 +91,21 @@ contract Synth is ExternStateToken, MixinResolver {
 
     /**
      * @notice _transferToFeeAddress function
-     * non-sUSD synths are exchanged into sUSD via synthInitiatedExchange
+     * non-tUSD synths are exchanged into tUSD via synthInitiatedExchange
      * notify feePool to record amount as fee paid to feePool */
     function _transferToFeeAddress(address to, uint value) internal returns (bool) {
         uint amountInUSD;
 
-        // sUSD can be transferred to FEE_ADDRESS directly
-        if (currencyKey == "sUSD") {
+        // tUSD can be transferred to FEE_ADDRESS directly
+        if (currencyKey == "tUSD") {
             amountInUSD = value;
             super._internalTransfer(messageSender, to, value);
         } else {
-            // else exchange synth into sUSD and send to FEE_ADDRESS
-            amountInUSD = exchanger().exchange(messageSender, currencyKey, value, "sUSD", FEE_ADDRESS);
+            // else exchange synth into tUSD and send to FEE_ADDRESS
+            amountInUSD = exchanger().exchange(messageSender, currencyKey, value, "tUSD", FEE_ADDRESS);
         }
 
-        // Notify feePool to record sUSD to distribute as fees
+        // Notify feePool to record tUSD to distribute as fees
         feePool().recordFeePaid(amountInUSD);
 
         return true;

@@ -1,9 +1,9 @@
 [
 	{
-		"name": "sUSD",
+		"name": "tUSD",
 		"asset": "USD",
 		"category": "forex",
 		"sign": "$",
-		"desc": "US Dollars"
+		"desc": "Transgo US Dollars"
 	}
 ]

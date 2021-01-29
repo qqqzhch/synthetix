@@ -9,7 +9,7 @@ import "./interfaces/ISynthetix.sol";
 contract PurgeableSynth is Synth {
     using SafeDecimalMath for uint;
 
-    // The maximum allowed amount of tokenSupply in equivalent sUSD value for this synth to permit purging
+    // The maximum allowed amount of tokenSupply in equivalent tUSD value for this synth to permit purging
     uint public maxSupplyToPurgeInUSD = 100000 * SafeDecimalMath.unit(); // 100,000
 
     /* ========== CONSTRUCTOR ========== */
@@ -34,13 +34,13 @@ contract PurgeableSynth is Synth {
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     /**
-     * @notice Function that allows owner to exchange any number of holders back to sUSD (for frozen or deprecated synths)
+     * @notice Function that allows owner to exchange any number of holders back to tUSD (for frozen or deprecated synths)
      * @param addresses The list of holders to purge
      */
     function purge(address[] addresses) external optionalProxy_onlyOwner {
         IExchangeRates exRates = exchangeRates();
 
-        uint maxSupplyToPurge = exRates.effectiveValue("sUSD", maxSupplyToPurgeInUSD, currencyKey);
+        uint maxSupplyToPurge = exRates.effectiveValue("tUSD", maxSupplyToPurgeInUSD, currencyKey);
 
         // Only allow purge when total supply is lte the max or the rate is frozen in ExchangeRates
         require(
@@ -54,7 +54,7 @@ contract PurgeableSynth is Synth {
             uint amountHeld = balanceOf(holder);
 
             if (amountHeld > 0) {
-                exchanger().exchange(holder, currencyKey, amountHeld, "sUSD", holder);
+                exchanger().exchange(holder, currencyKey, amountHeld, "tUSD", holder);
                 emitPurged(holder, amountHeld);
             }
         }

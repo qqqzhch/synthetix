@@ -22,7 +22,7 @@ contract EtherCollateral is Owned, Pausable, ReentrancyGuard, MixinResolver {
 
     uint256 constant SECONDS_IN_A_YEAR = 31536000; // Common Year
 
-    // Where fees are pooled in sUSD.
+    // Where fees are pooled in tUSD.
     address constant FEE_ADDRESS = 0xfeEFEEfeefEeFeefEEFEEfEeFeefEEFeeFEEFEeF;
 
     // ========== SETTER STATE VARIABLES ==========
@@ -344,12 +344,12 @@ contract EtherCollateral is Owned, Pausable, ReentrancyGuard, MixinResolver {
         // Burn all Synths issued for the loan
         synthsETH().burn(account, synthLoan.loanAmount);
 
-        // Fee Distribution. Purchase sUSD with ETH from Depot
-        require(synthsUSD().balanceOf(depot()) >= totalFees, "The sUSD Depot does not have enough sUSD to buy for fees");
+        // Fee Distribution. Purchase tUSD with ETH from Depot
+        require(synthtUSD().balanceOf(depot()) >= totalFees, "The tUSD Depot does not have enough tUSD to buy for fees");
         depot().exchangeEtherForSynths.value(totalFees)();
 
-        // Transfer the sUSD to distribute to SNX holders.
-        synthsUSD().transfer(FEE_ADDRESS, synthsUSD().balanceOf(this));
+        // Transfer the tUSD to distribute to SNX holders.
+        synthtUSD().transfer(FEE_ADDRESS, synthtUSD().balanceOf(this));
 
         // Send remainder ETH to caller
         address(msg.sender).transfer(synthLoan.collateralAmount.sub(totalFees));
@@ -407,8 +407,8 @@ contract EtherCollateral is Owned, Pausable, ReentrancyGuard, MixinResolver {
         return ISynth(resolver.requireAndGetAddress("SynthsETH", "Missing SynthsETH address"));
     }
 
-    function synthsUSD() internal view returns (ISynth) {
-        return ISynth(resolver.requireAndGetAddress("SynthsUSD", "Missing SynthsUSD address"));
+    function synthtUSD() internal view returns (ISynth) {
+        return ISynth(resolver.requireAndGetAddress("SynthtUSD", "Missing SynthtUSD address"));
     }
 
     function depot() internal view returns (IDepot) {

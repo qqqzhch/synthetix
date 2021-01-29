@@ -580,9 +580,9 @@ const deploy = async ({
 		await runStep({
 			contract: 'SynthetixProxy',
 			target: synthetixProxy,
-			expected: input => input === '0x2F794e75876744533d6883C50E0BAE62633B0216',
+			expected: input => input === '0xf214a4639dd86c98e0420c7c4dbeb324027224de',
 			write: 'setERCLambAddress',
-			writeArg: '0x2F794e75876744533d6883C50E0BAE62633B0216',
+			writeArg: '0xf214a4639dd86c98e0420c7c4dbeb324027224de',
 		});
 	}
 
@@ -790,7 +790,7 @@ const deploy = async ({
 			force: addNewSynths,
 		});
 
-		// sUSD proxy is used by Kucoin and Bittrex thus requires proxy / integration proxy to be set
+		// tUSD proxy is used by Kucoin and Bittrex thus requires proxy / integration proxy to be set
 		const synthProxyIsLegacy = currencyKey === 'tUSD' && network !== 'local';
 
 		const proxyForSynth = await deployContract({
@@ -807,7 +807,7 @@ const deploy = async ({
 		let proxyERC20ForSynth;
 
 		if (synthProxyIsLegacy) {
-			// additionally deploy an ERC20 proxy for the synth if it's legacy (sUSD and not on local)
+			// additionally deploy an ERC20 proxy for the synth if it's legacy (tUSD and not on local)
 			proxyERC20ForSynth = await deployContract({
 				name: `ProxyERC20${currencyKey}`,
 				source: `ProxyERC20`,
@@ -909,7 +909,7 @@ const deploy = async ({
 			});
 		}
 
-		// Setup integration proxy (ProxyERC20) for Synth (Remove when sUSD Proxy cuts over)
+		// Setup integration proxy (ProxyERC20) for Synth (Remove when tUSD Proxy cuts over)
 		if (proxyERC20ForSynth && synth) {
 			await runStep({
 				contract: `Synth${currencyKey}`,
@@ -1156,7 +1156,7 @@ const deploy = async ({
 					'Synthetix',
 					'SynthetixEscrow',
 					'SynthetixState',
-					'SynthsUSD',
+					'SynthtUSD',
 					'SynthetixProxy',
 					// 'SynthsETH',
 				].map(toBytes32),
@@ -1178,7 +1178,7 @@ const deploy = async ({
 					addressOf(synthetix),
 					addressOf(synthetixEscrow),
 					addressOf(synthetixState),
-					addressOf(deployer.deployedContracts['SynthsUSD']),
+					addressOf(deployer.deployedContracts['SynthtUSD']),
 					addressOf(synthetixProxy),
 					// addressOf(deployer.deployedContracts['SynthsETH']),
 				],

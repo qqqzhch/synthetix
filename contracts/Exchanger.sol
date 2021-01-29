@@ -16,7 +16,7 @@ contract Exchanger is MixinResolver {
 
     bool public exchangeEnabled;
 
-    bytes32 private constant sUSD = "sUSD";
+    bytes32 private constant tUSD = "tUSD";
 
     uint public waitingPeriodSecs;
 
@@ -54,11 +54,11 @@ contract Exchanger is MixinResolver {
 
         uint multiplier = 1;
 
-        // Is this a swing trade? I.e. long to short or vice versa, excluding when going into or out of sUSD.
+        // Is this a swing trade? I.e. long to short or vice versa, excluding when going into or out of tUSD.
         // Note: this assumes shorts begin with 'i' and longs with 's'.
         if (
-            (sourceCurrencyKey[0] == 0x73 && sourceCurrencyKey != sUSD && destinationCurrencyKey[0] == 0x69) ||
-            (sourceCurrencyKey[0] == 0x69 && destinationCurrencyKey != sUSD && destinationCurrencyKey[0] == 0x73)
+            (sourceCurrencyKey[0] == 0x73 && sourceCurrencyKey != tUSD && destinationCurrencyKey[0] == 0x69) ||
+            (sourceCurrencyKey[0] == 0x69 && destinationCurrencyKey != tUSD && destinationCurrencyKey[0] == 0x73)
         ) {
             // If so then double the exchange fee multipler
             multiplier = 2;
@@ -226,9 +226,9 @@ contract Exchanger is MixinResolver {
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function remitFee(IExchangeRates _exRates, ISynthetix _synthetix, uint fee, bytes32 currencyKey) internal {
-        // Remit the fee in sUSDs
-        uint usdFeeAmount = _exRates.effectiveValue(currencyKey, fee, sUSD);
-        _synthetix.synths(sUSD).issue(feePool().FEE_ADDRESS(), usdFeeAmount);
+        // Remit the fee in tUSDs
+        uint usdFeeAmount = _exRates.effectiveValue(currencyKey, fee, tUSD);
+        _synthetix.synths(tUSD).issue(feePool().FEE_ADDRESS(), usdFeeAmount);
         // Tell the fee pool about this.
         feePool().recordFeePaid(usdFeeAmount);
     }

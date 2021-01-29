@@ -44,7 +44,7 @@
 	"SynthetixState": {
 		"deploy": false
 	},
-	"SynthsUSD": {
+	"SynthtUSD": {
 		"deploy": false
 	},
 	"ProxyERC20": {
@@ -56,7 +56,7 @@
 	"ProxySynthetix": {
 		"deploy": false
 	},
-	"ProxysUSD": {
+	"ProxytUSD": {
 		"deploy": false
 	},
 	"SafeDecimalMath": {
@@ -68,10 +68,10 @@
 	"TokenStateSynthetix": {
 		"deploy": false
 	},
-	"TokenStatesUSD": {
+	"TokenStatetUSD": {
 		"deploy": false
 	},
-	"ProxyERC20sUSD": {
+	"ProxyERC20tUSD": {
 		"deploy": false
 	},
 	"SynthetixProxy": {

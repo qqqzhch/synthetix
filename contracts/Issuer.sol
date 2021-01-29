@@ -13,7 +13,7 @@ contract Issuer is MixinResolver {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
-    bytes32 private constant sUSD = "sUSD";
+    bytes32 private constant tUSD = "tUSD";
 
     constructor(address _owner, address _resolver) public MixinResolver(_owner, _resolver) {}
 
@@ -46,11 +46,11 @@ contract Issuer is MixinResolver {
         (uint maxIssuable, uint existingDebt, uint totalSystemDebt) = synthetix().remainingIssuableSynths(from);
         require(amount <= maxIssuable, "Amount too large");
 
-        // Keep track of the debt they're about to create (in sUSD)
+        // Keep track of the debt they're about to create (in tUSD)
         _addToDebtRegister(from, amount, existingDebt, totalSystemDebt);
 
         // Create their synths
-        synthetix().synths(sUSD).issue(from, amount);
+        synthetix().synths(tUSD).issue(from, amount);
 
         // Store their locked SNX amount to determine their fee % for the period
         _appendAccountIssuanceRecord(from);
@@ -64,7 +64,7 @@ contract Issuer is MixinResolver {
         _addToDebtRegister(from, maxIssuable, existingDebt, totalSystemDebt);
 
         // Create their synths
-        synthetix().synths(sUSD).issue(from, maxIssuable);
+        synthetix().synths(tUSD).issue(from, maxIssuable);
 
         // Store their locked SNX amount to determine their fee % for the period
         _appendAccountIssuanceRecord(from);
@@ -78,15 +78,15 @@ contract Issuer is MixinResolver {
         ISynthetix _synthetix = synthetix();
         IExchanger _exchanger = exchanger();
 
-        // First settle anything pending into sUSD as burning or issuing impacts the size of the debt pool
-        (, uint refunded) = _exchanger.settle(from, sUSD);
+        // First settle anything pending into tUSD as burning or issuing impacts the size of the debt pool
+        (, uint refunded) = _exchanger.settle(from, tUSD);
 
         // How much debt do they have?
-        (uint existingDebt, uint totalSystemValue) = _synthetix.debtBalanceOfAndTotalDebt(from, sUSD);
+        (uint existingDebt, uint totalSystemValue) = _synthetix.debtBalanceOfAndTotalDebt(from, tUSD);
 
         require(existingDebt > 0, "No debt to forgive");
 
-        uint debtToRemoveAfterSettlement = _exchanger.calculateAmountAfterSettlement(from, sUSD, amount, refunded);
+        uint debtToRemoveAfterSettlement = _exchanger.calculateAmountAfterSettlement(from, tUSD, amount, refunded);
 
         // If they're trying to burn more debt than they actually owe, rather than fail the transaction, let's just
         // clear their debt and leave them be.
@@ -98,7 +98,7 @@ contract Issuer is MixinResolver {
         uint amountToBurn = amountToRemove;
 
         // synth.burn does a safe subtraction on balance (so it will revert if there are not enough synths).
-        _synthetix.synths(sUSD).burn(from, amountToBurn);
+        _synthetix.synths(tUSD).burn(from, amountToBurn);
 
         // Store their debtRatio against a feeperiod to determine their fee/rewards % for the period
         _appendAccountIssuanceRecord(from);
@@ -108,7 +108,7 @@ contract Issuer is MixinResolver {
 
     /**
      * @notice Store in the FeePool the users current debt value in the system.
-      * @dev debtBalanceOf(messageSender, "sUSD") to be used with totalIssuedSynthsExcludeEtherCollateral("sUSD") to get
+      * @dev debtBalanceOf(messageSender, "tUSD") to be used with totalIssuedSynthsExcludeEtherCollateral("tUSD") to get
      *  users % of the system within a feePeriod.
      */
     function _appendAccountIssuanceRecord(address from) internal {
@@ -163,8 +163,8 @@ contract Issuer is MixinResolver {
 
     /**
      * @notice Remove a debt position from the register
-     * @param amount The amount (in UNIT base) being presented in sUSDs
-     * @param existingDebt The existing debt (in UNIT base) of address presented in sUSDs
+     * @param amount The amount (in UNIT base) being presented in tUSDs
+     * @param existingDebt The existing debt (in UNIT base) of address presented in tUSDs
      */
     function _removeFromDebtRegister(address from, uint amount, uint existingDebt, uint totalDebtIssued) internal {
         ISynthetixState state = synthetixState();

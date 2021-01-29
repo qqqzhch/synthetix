@@ -13,7 +13,7 @@ contract IFeePool {
 
     function amountReceivedFromTransfer(uint value) external view returns (uint);
 
-    function recordFeePaid(uint sUSDAmount) external;
+    function recordFeePaid(uint tUSDAmount) external;
 
     function appendAccountIssuanceRecord(address account, uint lockedAmount, uint debtEntryIndex) external;
 

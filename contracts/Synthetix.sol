@@ -30,7 +30,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
     string constant TOKEN_NAME = "Transgo Token";
     string constant TOKEN_SYMBOL = "sLAMB";
     uint8 constant DECIMALS = 18;
-    bytes32 constant sUSD = "sUSD";
+    bytes32 constant tUSD = "tUSD";
 
     // ========== CONSTRUCTOR ==========
 
@@ -192,7 +192,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
     function removeSynth(bytes32 currencyKey) external optionalProxy_onlyOwner {
         require(synths[currencyKey] != address(0), "Synth does not exist");
         require(synths[currencyKey].totalSupply() == 0, "Synth supply exists");
-        require(currencyKey != sUSD, "Cannot remove synth");
+        require(currencyKey != tUSD, "Cannot remove synth");
 
         // Save the address we're removing for emitting the event at the end.
         address synthToRemove = synths[currencyKey];
@@ -287,7 +287,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
         )
     {
         // What is the value of their SNX balance in the destination currency?
-        uint destinationValue = exchangeRates().effectiveValue("sLAMB", collateral(_issuer), sUSD);
+        uint destinationValue = exchangeRates().effectiveValue("sLAMB", collateral(_issuer), tUSD);
 
         // They're allowed to issue up to issuanceRatio of that value
         return destinationValue.multiplyDecimal(synthetixState().issuanceRatio());
@@ -314,7 +314,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
      * @notice If a user issues synths backed by SNX in their wallet, the SNX become locked. This function
      * will tell you how many synths a user has to give back to the system in order to unlock their original
      * debt position. This is priced in whichever synth is passed in as a currency key, e.g. you can price
-     * the debt in sUSD, or any other synth you wish.
+     * the debt in tUSD, or any other synth you wish.
      */
     function debtBalanceOf(address _issuer, bytes32 currencyKey)
         public
@@ -387,7 +387,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
             uint
         )
     {
-        (uint alreadyIssued, uint totalSystemDebt) = debtBalanceOfAndTotalDebt(_issuer, sUSD);
+        (uint alreadyIssued, uint totalSystemDebt) = debtBalanceOfAndTotalDebt(_issuer, tUSD);
         uint maxIssuable = maxIssuableSynths(_issuer);
 
         if (alreadyIssued >= maxIssuable) {

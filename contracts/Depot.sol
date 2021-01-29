@@ -49,15 +49,15 @@ contract Depot is SelfDestructible, Pausable, ReentrancyGuard, MixinResolver {
     // The ending index of our queue exclusive
     uint public depositEndIndex;
 
-    /* This is a convenience variable so users and dApps can just query how much sUSD
+    /* This is a convenience variable so users and dApps can just query how much tUSD
        we have available for purchase without having to iterate the mapping with a
        O(n) amount of calls for something we'll probably want to display quite regularly. */
     uint public totalSellableDeposits;
 
-    // The minimum amount of sUSD required to enter the FiFo queue
+    // The minimum amount of tUSD required to enter the FiFo queue
     uint public minimumDepositAmount = 50 * SafeDecimalMath.unit();
 
-    // A cap on the amount of sUSD you can buy with ETH in 1 transaction
+    // A cap on the amount of tUSD you can buy with ETH in 1 transaction
     uint public maxEthPurchase = 500 * SafeDecimalMath.unit();
 
     // If a user deposits a synth amount < the minimumDepositAmount the contract will keep
@@ -101,8 +101,8 @@ contract Depot is SelfDestructible, Pausable, ReentrancyGuard, MixinResolver {
     }
 
     /**
-     * @notice Set the minimum deposit amount required to depoist sUSD into the FIFO queue
-     * @param _amount The new new minimum number of sUSD required to deposit
+     * @notice Set the minimum deposit amount required to depoist tUSD into the FIFO queue
+     * @param _amount The new new minimum number of tUSD required to deposit
      */
     function setMinimumDepositAmount(uint _amount) external onlyOwner {
         // Do not allow us to set it less than 1 dollar opening up to fractional desposits in the queue again
@@ -114,14 +114,14 @@ contract Depot is SelfDestructible, Pausable, ReentrancyGuard, MixinResolver {
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     /**
-     * @notice Fallback function (exchanges ETH to sUSD)
+     * @notice Fallback function (exchanges ETH to tUSD)
      */
     function() external payable {
         exchangeEtherForSynths();
     }
 
     /**
-     * @notice Exchange ETH to sUSD.
+     * @notice Exchange ETH to tUSD.
      */
     function exchangeEtherForSynths()
         public
@@ -130,7 +130,7 @@ contract Depot is SelfDestructible, Pausable, ReentrancyGuard, MixinResolver {
         rateNotStale(ETH)
         notPaused
         returns (
-            uint // Returns the number of Synths (sUSD) received
+            uint // Returns the number of Synths (tUSD) received
         )
     {
         require(msg.value <= maxEthPurchase, "ETH amount above maxEthPurchase limit");
@@ -183,7 +183,7 @@ contract Depot is SelfDestructible, Pausable, ReentrancyGuard, MixinResolver {
                     // Note: Fees are calculated by the Synth contract, so when
                     //       we request a specific transfer here, the fee is
                     //       automatically deducted and sent to the fee pool.
-                    synthsUSD().transfer(msg.sender, remainingToFulfill);
+                    synthtUSD().transfer(msg.sender, remainingToFulfill);
 
                     // And we have nothing left to fulfill on this order.
                     remainingToFulfill = 0;
@@ -219,7 +219,7 @@ contract Depot is SelfDestructible, Pausable, ReentrancyGuard, MixinResolver {
                     // Note: Fees are calculated by the Synth contract, so when
                     //       we request a specific transfer here, the fee is
                     //       automatically deducted and sent to the fee pool.
-                    synthsUSD().transfer(msg.sender, deposit.amount);
+                    synthtUSD().transfer(msg.sender, deposit.amount);
 
                     // And subtract the order from our outstanding amount remaining
                     // for the next iteration of the loop.
@@ -239,14 +239,14 @@ contract Depot is SelfDestructible, Pausable, ReentrancyGuard, MixinResolver {
 
         if (fulfilled > 0) {
             // Now tell everyone that we gave them that many (only if the amount is greater than 0).
-            emit Exchange("ETH", msg.value, "sUSD", fulfilled);
+            emit Exchange("ETH", msg.value, "tUSD", fulfilled);
         }
 
         return fulfilled;
     }
 
     /**
-     * @notice Exchange ETH to sUSD while insisting on a particular rate. This allows a user to
+     * @notice Exchange ETH to tUSD while insisting on a particular rate. This allows a user to
      *         exchange while protecting against frontrunning by the contract owner on the exchange rate.
      * @param guaranteedRate The exchange rate (ether price) which must be honored or the call will revert.
      */
@@ -256,7 +256,7 @@ contract Depot is SelfDestructible, Pausable, ReentrancyGuard, MixinResolver {
         rateNotStale(ETH)
         notPaused
         returns (
-            uint // Returns the number of Synths (sUSD) received
+            uint // Returns the number of Synths (tUSD) received
         )
     {
         require(guaranteedRate == exchangeRates().rateForCurrency(ETH), "Guaranteed rate would not be received");
@@ -317,7 +317,7 @@ contract Depot is SelfDestructible, Pausable, ReentrancyGuard, MixinResolver {
     }
 
     /**
-     * @notice Exchange sUSD for SNX
+     * @notice Exchange tUSD for SNX
      * @param synthAmount The amount of synths the user wishes to exchange.
      */
     function exchangeSynthsForSNX(uint synthAmount)
@@ -334,18 +334,18 @@ contract Depot is SelfDestructible, Pausable, ReentrancyGuard, MixinResolver {
         // Ok, transfer the Synths to our funds wallet.
         // These do not go in the deposit queue as they aren't for sale as such unless
         // they're sent back in from the funds wallet.
-        synthsUSD().transferFrom(msg.sender, fundsWallet, synthAmount);
+        synthtUSD().transferFrom(msg.sender, fundsWallet, synthAmount);
 
         // And send them the SNX.
         synthetix().transfer(msg.sender, synthetixToSend);
 
-        emit Exchange("sUSD", synthAmount, "SNX", synthetixToSend);
+        emit Exchange("tUSD", synthAmount, "SNX", synthetixToSend);
 
         return synthetixToSend;
     }
 
     /**
-     * @notice Exchange sUSD for SNX while insisting on a particular rate. This allows a user to
+     * @notice Exchange tUSD for SNX while insisting on a particular rate. This allows a user to
      *         exchange while protecting against frontrunning by the contract owner on the exchange rate.
      * @param synthAmount The amount of synths the user wishes to exchange.
      * @param guaranteedRate A rate (synthetix price) the caller wishes to insist upon.
@@ -411,18 +411,18 @@ contract Depot is SelfDestructible, Pausable, ReentrancyGuard, MixinResolver {
         require(synthsToSend > 0, "You have no deposits to withdraw.");
 
         // Send their deposits back to them (minus fees)
-        synthsUSD().transfer(msg.sender, synthsToSend);
+        synthtUSD().transfer(msg.sender, synthsToSend);
 
         emit SynthWithdrawal(msg.sender, synthsToSend);
     }
 
     /**
      * @notice depositSynths: Allows users to deposit synths via the approve / transferFrom workflow
-     * @param amount The amount of sUSD you wish to deposit (must have been approved first)
+     * @param amount The amount of tUSD you wish to deposit (must have been approved first)
      */
     function depositSynths(uint amount) external {
         // Grab the amount of synths. Will fail if not approved first
-        synthsUSD().transferFrom(msg.sender, this, amount);
+        synthtUSD().transferFrom(msg.sender, this, amount);
 
         // A minimum deposit amount is designed to protect purchasers from over paying
         // gas for fullfilling multiple small synth deposits
@@ -463,7 +463,7 @@ contract Depot is SelfDestructible, Pausable, ReentrancyGuard, MixinResolver {
      * @param amount The amount of ether (in wei) you want to ask about
      */
     function synthetixReceivedForEther(uint amount) public view returns (uint) {
-        // How much is the ETH they sent us worth in sUSD (ignoring the transfer fee)?
+        // How much is the ETH they sent us worth in tUSD (ignoring the transfer fee)?
         uint valueSentInSynths = amount.multiplyDecimal(exchangeRates().rateForCurrency(ETH));
 
         // Now, how many SNX will that USD amount buy?
@@ -482,8 +482,8 @@ contract Depot is SelfDestructible, Pausable, ReentrancyGuard, MixinResolver {
 
     /* ========== INTERNAL VIEWS ========== */
 
-    function synthsUSD() internal view returns (ISynth) {
-        return ISynth(resolver.requireAndGetAddress("SynthsUSD", "Missing SynthsUSD address"));
+    function synthtUSD() internal view returns (ISynth) {
+        return ISynth(resolver.requireAndGetAddress("SynthtUSD", "Missing SynthtUSD address"));
     }
 
     function synthetix() internal view returns (IERC20) {
