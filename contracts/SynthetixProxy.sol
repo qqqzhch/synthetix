@@ -329,25 +329,30 @@ contract Ownable {
 
 contract SynthetixProxy is Ownable {
     using SafeMath for uint256;
-    address synth;
-    address ERCLamb;
+    address public synth;
+    address public ERCLamb;
     mapping(address => uint) public lockInfo;
 
-    function setSynthAddress(address _synth) public onlyOwner {
+    constructor(address _synth, address _ERCLamb) public {
         synth = _synth;
-    }
-
-    function setERCLambAddress(address _ERCLamb) public onlyOwner {
         ERCLamb = _ERCLamb;
     }
 
-    function lock(uint value) public {
-        require(ERC20(ERCLamb).transferFrom(msg.sender, this, value), "transferFrom error");
+    function setSynthAddress(address _synth) external onlyOwner {
+        synth = _synth;
+    }
+
+    function setERCLambAddress(address _ERCLamb) external onlyOwner {
+        ERCLamb = _ERCLamb;
+    }
+
+    function lock(uint value) external {
+        require(ERC20(ERCLamb).transferFrom(msg.sender, address(this), value), "transferFrom error");
         lockInfo[msg.sender] = lockInfo[msg.sender].add(value);
         ISynContract(synth).mint(msg.sender, value);
     }
 
-    function unlock(uint value) public {
+    function unlock(uint value) external {
         require(lockInfo[msg.sender] >= value, "not enough token");
         lockInfo[msg.sender] = lockInfo[msg.sender].sub(value);
         ISynContract(synth).burn(msg.sender, value);
