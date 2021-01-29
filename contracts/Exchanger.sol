@@ -55,10 +55,10 @@ contract Exchanger is MixinResolver {
         uint multiplier = 1;
 
         // Is this a swing trade? I.e. long to short or vice versa, excluding when going into or out of tUSD.
-        // Note: this assumes shorts begin with 'i' and longs with 's'.
+        // Note: this assumes shorts begin with 'i' and longs with 't'.
         if (
-            (sourceCurrencyKey[0] == 0x73 && sourceCurrencyKey != tUSD && destinationCurrencyKey[0] == 0x69) ||
-            (sourceCurrencyKey[0] == 0x69 && destinationCurrencyKey != tUSD && destinationCurrencyKey[0] == 0x73)
+            (sourceCurrencyKey[0] == 0x74 && sourceCurrencyKey != tUSD && destinationCurrencyKey[0] == 0x69) ||
+            (sourceCurrencyKey[0] == 0x69 && destinationCurrencyKey != tUSD && destinationCurrencyKey[0] == 0x74)
         ) {
             // If so then double the exchange fee multipler
             multiplier = 2;
