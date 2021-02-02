@@ -777,6 +777,13 @@ contract FeePool is Proxyable, SelfDestructible, LimitedSetup, MixinResolver {
         return _effectiveDebtRatioForPeriod(closingDebtIndex, ownershipPercentage, debtEntryIndex);
     }
 
+    function effectiveDebtRatioForLastCloseIndex(address account, uint closingDebtIndex) external view returns (uint) {
+        (ownershipPercentage, debtEntryIndex) = feePoolState().applicableIssuanceData(account, closingDebtIndex);
+
+        // internal function will check closingDebtIndex has corresponding debtLedger entry
+        return _effectiveDebtRatioForPeriod(closingDebtIndex, ownershipPercentage, debtEntryIndex);
+    }
+
     /**
      * @notice Get the feePeriodID of the last claim this account made
      * @param _claimingAddress account to check the last fee period ID claim for
