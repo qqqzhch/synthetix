@@ -18,4 +18,6 @@ contract IFeePool {
     function appendAccountIssuanceRecord(address account, uint lockedAmount, uint debtEntryIndex) external;
 
     function setRewardsToDistribute(uint amount) external;
+
+    function effectiveDebtRatioForLastCloseIndex(address account, uint closingDebtIndex) external view returns (uint);
 }

@@ -582,13 +582,24 @@ const deploy = async ({
 	// 	});
     // }
 
-    const synthetixProxy = await deployContract({
-        name: 'SynthetixProxy',
-        args: [
-            addressOf(synthetix),
-           "0xf214a4639dd86c98e0420c7c4dbeb324027224de",
-        ],
-})
+	const synthetixProxy = await deployContract({
+			name: 'SynthetixProxy',
+			args: [
+					account,
+					addressOf(synthetix),
+				 "0xf214a4639dd86c98e0420c7c4dbeb324027224de", //TODO modify mainnet
+			],
+	})
+
+	const synthetixReward = await deployContract({
+		name: 'SynthetixReward',
+		args: [
+				account,
+				"0xf214a4639dd86c98e0420c7c4dbeb324027224de",
+				addressOf(synthetixState),
+				addressOf(feePool),
+		]
+	})
 
 	if (proxySynthetix && synthetix) {
 		await runStep({

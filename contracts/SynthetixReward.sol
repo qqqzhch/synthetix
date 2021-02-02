@@ -4,69 +4,63 @@
 pragma solidity 0.4.25;
 
 import "./SafeDecimalMath.sol";
-import "./Owned.sol";
 import "./interfaces/IERC20.sol";
+import "./Owned.sol";
+import "./interfaces/ISynthetixState.sol";
+import "./interfaces/IFeePool.sol";
 
-contract ISynRewardContract {
-    function closeCurrentFeePeriod() external;
-    function debtLedgerLength() external view returns (uint);
-    function applicableIssuanceData(address account, uint closingDebtIndex) external view returns (uint, uint);
-    function effectiveDebtRatioForLastCloseIndex(address account, uint closingDebtIndex) external view returns (uint);
-}
 
 contract SynthetixReward is Owned {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
-    address TFIERC20;
-    address FeePoolState;
-    address SynthetixState;
-    address FeePool;
+    address public ercTFI;
+    address public synthetixState;
+    address public feePool;
 
-    uint lastCloseIndex;
-    uint MIN_CLOSE_PERIOD_TIME = 30 days;
-    uint lastCloseTime;
+    uint public lastCloseIndex;
+    uint public MIN_CLOSE_PERIOD_TIME = 30 days;
+    uint public lastCloseTime;
 
     // cache
-    uint totalRewardPeriod;
+    uint public totalRewardPeriod;
 
-    mapping(address => uint) rewardIndex;
+    mapping(address => uint) public rewardIndex;
 
-    constructor (address _owner, address _TFIERC20, address _SynthetixState, address _FeePoolState, address _FeePool) public Owned(_owner) {
-        TFIERC20 = _TFIERC20;
-        SynthetixState = _SynthetixState;
-        FeePoolState = _FeePoolState;
-        FeePool = _FeePool;
+    constructor (address _owner, address _ercTFI, address _synthetixState, address _feePool) public Owned(_owner) {
+        ercTFI = _ercTFI;
+        synthetixState = _synthetixState;
+        feePool = _feePool;
 
         lastCloseTime = block.timestamp;
         lastCloseIndex = 0;
     }
 
-    function setTFIERC20(address _TFIERC20) external onlyOwner {
-        require(_TFIERC20 != address(0));
-        TFIERC20 = _TFIERC20;
+    function setPeriodTime(uint _period) external onlyOwner {
+        MIN_CLOSE_PERIOD_TIME = _period;
     }
 
-    function setSynthetixState(address _SynthetixState) external onlyOwner {
-        require(_SynthetixState != address(0));
-        SynthetixState = _SynthetixState;
+    function setErcTFI(address _ercTFI) external onlyOwner {
+        require(_ercTFI != address(0));
+        ercTFI = _ercTFI;
     }
 
-    function setFeePoolState(address _FeePoolState) external onlyOwner {
-        require(_FeePoolState != address(0));
-        FeePoolState = _FeePoolState;
+    function setSynthetixState(address _synthetixState) external onlyOwner {
+        require(_synthetixState != address(0));
+        synthetixState = _synthetixState;
     }
 
-    function setFeePool(address _FeePool) external onlyOwner {
-        require(_FeePool != address(0));
-        FeePool = _FeePool;
+    function setFeePool(address _feePool) external onlyOwner {
+        require(_feePool != address(0));
+        feePool = _feePool;
     }
 
     function closePeriodReward() external onlyOwner {
         require(block.timestamp >= lastCloseTime.add(MIN_CLOSE_PERIOD_TIME), "too early close reward period");
-        ISynRewardContract(FeePool).closeCurrentFeePeriod();
-        uint lastIndex = ISynRewardContract(SynthetixState).debtLedgerLength();
+        uint length = ISynthetixState(synthetixState).debtLedgerLength();
+        require(length > 0, "have no ledger");
+        uint lastIndex = length - 1;
         lastCloseIndex = lastIndex;
-        uint periodReward = IERC20(TFIERC20).balanceOf(address(this));
+        uint periodReward = IERC20(ercTFI).balanceOf(address(this));
         require(periodReward > 0, "TFI reward token must greater 0");
         totalRewardPeriod = periodReward;
         lastCloseTime = block.timestamp;
@@ -74,17 +68,17 @@ contract SynthetixReward is Owned {
 
     function settleReward() external {
         require(rewardIndex[msg.sender] < lastCloseIndex, "already reward");
-        uint remainderAmount = IERC20(TFIERC20).balanceOf(address(this));
+        uint remainderAmount = IERC20(ercTFI).balanceOf(address(this));
         require(remainderAmount > 0, "not enough reward token");
 
-        (uint rewardPercent, uint debtEntryIndex) = ISynRewardContract(FeePoolState).applicableIssuanceData(msg.sender, lastCloseIndex);
+        uint rewardPercent = IFeePool(feePool).effectiveDebtRatioForLastCloseIndex(msg.sender, lastCloseIndex);
 
         // transfer
-        uint rewardAmount = rewardPercent.multiplyDecimal(totalRewardPeriod);
+        uint rewardAmount = rewardPercent.multiplyDecimal(totalRewardPeriod).preciseDecimalToDecimal();
         if (remainderAmount < rewardAmount) {
             rewardAmount = remainderAmount;
         }
-        IERC20(TFIERC20).transfer(msg.sender, rewardAmount);
+        IERC20(ercTFI).transfer(msg.sender, rewardAmount);
         rewardIndex[msg.sender] = lastCloseIndex;
     }
 }
