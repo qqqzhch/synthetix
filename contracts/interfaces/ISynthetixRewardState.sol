@@ -2,7 +2,7 @@ pragma solidity 0.4.25;
 
 
 /**
- * @title ISynthetixRewardState Interface
+ * @title SynthetixRewardState Interface
  * @notice Abstract contract to hold public getters
  */
 interface ISynthetixRewardState {
