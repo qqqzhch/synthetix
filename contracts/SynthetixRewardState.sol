@@ -4,13 +4,9 @@ Synthetix reward state
 
 pragma solidity 0.4.25;
 
-import "./SafeDecimalMath.sol";
 import "./Owned.sol";
 
 contract SynthetixRewardState is Owned {
-    using SafeMath for uint;
-    using SafeDecimalMath for uint;
-
     /* ========== STATE VARIABLES ========== */
 
     uint8 public constant REWARD_PERIOD_LENGTH = 6;

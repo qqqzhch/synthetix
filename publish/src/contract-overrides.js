@@ -12,5 +12,8 @@ module.exports = {
 	// Runtime.functionPointers[index] were being thrown by solcjs.
 	'Synthetix.sol': {
 		runs: 200,
-	},
+    },
+    'SynthetixReward.sol': {
+		runs: 200,
+    },
 };
