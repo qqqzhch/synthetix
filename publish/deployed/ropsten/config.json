@@ -79,5 +79,8 @@
 	},
 	"SynthetixReward": {
 		"deploy": false
+	},
+	"SynthetixRewardState": {
+		"deploy": true
 	}
 }

@@ -71,24 +71,24 @@ const loadConnections = ({ network }) => {
 	// 	throw Error('Missing .env key of INFURA_PROJECT_ID. Please add and retry.');
 	// }
 
-	// const providerUrl =
-	// 	network === 'local'
-	// 		? 'https://http-testnet.hecochain.com'
-	// 		: `https://http-testnet.hecochain.com`;
-	// const privateKey = process.env.DEPLOY_PRIVATE_KEY;
-	// const etherscanUrl =
-	// 	network === 'mainnet'
-	// 		? 'https://http-testnet.hecochain.com/api'
-	// 		: `https://http-testnet.hecochain.com/api`;
 	const providerUrl =
-			network === 'local'
-					? 'http://127.0.0.1:8545'
-					: `https://${network}.infura.io/v3/${process.env.INFURA_PROJECT_ID}`;
+		network === 'local'
+			? 'https://http-testnet.hecochain.com'
+			: `https://http-testnet.hecochain.com`;
 	const privateKey = process.env.DEPLOY_PRIVATE_KEY;
 	const etherscanUrl =
-			network === 'mainnet'
-					? 'https://api.etherscan.io/api'
-					: `https://api-${network}.etherscan.io/api`;
+		network === 'mainnet'
+			? 'https://http-testnet.hecochain.com/api'
+			: `https://http-testnet.hecochain.com/api`;
+	// const providerUrl =
+	// 		network === 'local'
+	// 				? 'http://127.0.0.1:8545'
+	// 				: `https://${network}.infura.io/v3/${process.env.INFURA_PROJECT_ID}`;
+	// const privateKey = process.env.DEPLOY_PRIVATE_KEY;
+	// const etherscanUrl =
+	// 		network === 'mainnet'
+	// 				? 'https://api.etherscan.io/api'
+	// 				: `https://api-${network}.etherscan.io/api`;
 
 
 	const etherscanLinkPrefix = `https://${network !== 'mainnet' ? network + '.' : ''}etherscan.io`;

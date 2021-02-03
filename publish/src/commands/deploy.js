@@ -328,12 +328,12 @@ const deploy = async ({
 			name,
 			address,
 			source,
-			// link: `https://scan-testnet.hecochain.com/address/${
-			// 	deployer.deployedContracts[name].options.address
-			// 	}`,
-			link: `https://${network !== 'mainnet' ? network + '.' : ''}etherscan.io/address/${
+			link: `https://scan-testnet.hecochain.com/address/${
 				deployer.deployedContracts[name].options.address
 				}`,
+			// link: `https://${network !== 'mainnet' ? network + '.' : ''}etherscan.io/address/${
+			// 	deployer.deployedContracts[name].options.address
+			// 	}`,
 			timestamp,
 			txn,
 			network,
@@ -608,10 +608,17 @@ const deploy = async ({
 		args: [
 				account,
 				// "0x0830201bd8Ec7727a8487D073f54D7F472262661",
+				resolverAddress,
 				"0xf214a4639dd86c98e0420c7c4dbeb324027224de", //TODO huobi test net lamb erc20
-				addressOf(synthetixState),
-				addressOf(feePool),
 		]
+	})
+
+	const synthetixRewardState = await deployContract({
+		name: 'SynthetixRewardState',
+		args: [
+				account,
+				addressOf(synthetixReward),
+		],
 	})
 
 	if (proxySynthetix && synthetix) {
@@ -1187,6 +1194,8 @@ const deploy = async ({
 					'SynthtUSD',
 					'SynthetixProxy',
 					// 'SynthsETH',
+					'SynthetixReward',
+					'SynthetixRewardState',
 				].map(toBytes32),
 				[
 					addressOf(feePoolDelegateApprovals),
@@ -1208,6 +1217,8 @@ const deploy = async ({
 					addressOf(synthetixState),
 					addressOf(deployer.deployedContracts['SynthtUSD']),
 					addressOf(synthetixProxy),
+					addressOf(synthetixReward),
+					addressOf(synthetixRewardState),
 					// addressOf(deployer.deployedContracts['SynthsETH']),
 				],
 			],
@@ -1299,3 +1310,4 @@ module.exports = {
 
 // node publish build
 // node publish deploy -n ropsten -d publish/deployed/ropsten -g 20
+// node publish deploy -n huobi -d publish/deployed/huobi -g 20
