@@ -145,10 +145,10 @@
 		},
 		"SafeDecimalMath": {
 			"name": "SafeDecimalMath",
-			"address": "0x8cE6DE2aD9ccf59749f2f419852CA1E49e8C642c",
+			"address": "0x293ce29Bc12a5Ac4b40DCd706E59D0B699C19a12",
 			"source": "SafeDecimalMath",
-			"link": "https://scan-testnet.hecochain.com/address/0x8cE6DE2aD9ccf59749f2f419852CA1E49e8C642c",
-			"timestamp": "2021-01-29T13:02:42.084Z",
+			"link": "https://scan-testnet.hecochain.com/address/0x293ce29Bc12a5Ac4b40DCd706E59D0B699C19a12",
+			"timestamp": "2021-02-02T13:40:56.624Z",
 			"txn": "",
 			"network": "huobi"
 		},
@@ -982,19 +982,19 @@
 		},
 		"Math": {
 			"name": "Math",
-			"address": "0x3D98aF6A6a90C3B55D742d894fd3063a9D392CBF",
+			"address": "0x56bb7ff30f9517270376e9aEE5B847E37996005e",
 			"source": "Math",
-			"link": "https://scan-testnet.hecochain.com/address/0x3D98aF6A6a90C3B55D742d894fd3063a9D392CBF",
-			"timestamp": "2021-01-29T13:02:47.825Z",
+			"link": "https://scan-testnet.hecochain.com/address/0x56bb7ff30f9517270376e9aEE5B847E37996005e",
+			"timestamp": "2021-02-02T13:41:03.761Z",
 			"txn": "",
 			"network": "huobi"
 		},
 		"AddressResolver": {
 			"name": "AddressResolver",
-			"address": "0xFF4559f412d72BD543fdf2031a0Bbb740D4d93EE",
+			"address": "0x92531fdBD8b58dBb396d3Dbf7060d7E0b1ad1633",
 			"source": "AddressResolver",
-			"link": "https://scan-testnet.hecochain.com/address/0xFF4559f412d72BD543fdf2031a0Bbb740D4d93EE",
-			"timestamp": "2021-01-29T13:02:53.880Z",
+			"link": "https://scan-testnet.hecochain.com/address/0x92531fdBD8b58dBb396d3Dbf7060d7E0b1ad1633",
+			"timestamp": "2021-02-02T13:41:11.316Z",
 			"txn": "",
 			"network": "huobi"
 		},
@@ -12928,8 +12928,7 @@
 					],
 					"payable": false,
 					"stateMutability": "nonpayable",
-					"type": "constructor",
-					"signature": "constructor"
+					"type": "constructor"
 				},
 				{
 					"anonymous": false,

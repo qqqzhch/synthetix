@@ -145,86 +145,94 @@ const deploy = async ({
 	let currentLastMintEvent;
 	let currentWeekOfInflation;
 
-	try {
-		const oldSynthetix = getExistingContract({ contract: 'Synthetix' });
-		currentSynthetixSupply = await oldSynthetix.methods.totalSupply().call();
+	currentSynthetixSupply = w3utils.toWei((100e6).toString());
+	currentWeekOfInflation = 0;
+	currentLastMintEvent = 0;
 
-		// inflationSupplyToDate = total supply - 100m
-		const inflationSupplyToDate = w3utils
-			.toBN(currentSynthetixSupply)
-			.sub(w3utils.toBN(w3utils.toWei((100e6).toString())));
+	// try {
+	// 	const oldSynthetix = getExistingContract({ contract: 'Synthetix' });
+	// 	currentSynthetixSupply = await oldSynthetix.methods.totalSupply().call();
+	//
+	// 	// inflationSupplyToDate = total supply - 100m
+	// 	const inflationSupplyToDate = w3utils
+	// 		.toBN(currentSynthetixSupply)
+	// 		.sub(w3utils.toBN(w3utils.toWei((100e6).toString())));
+	//
+	// 	// current weekly inflation 75m / 52
+	// 	const weeklyInflation = w3utils.toBN(w3utils.toWei((75e6 / 52).toString()));
+	// 	currentWeekOfInflation = inflationSupplyToDate.div(weeklyInflation);
+	//
+	// 	// Check result is > 0 else set to 0 for currentWeek
+	// 	currentWeekOfInflation = currentWeekOfInflation.gt(w3utils.toBN('0'))
+	// 		? currentWeekOfInflation.toNumber()
+	// 		: 0;
+	//
+	// 	// Calculate lastMintEvent as Inflation start date + number of weeks issued * secs in weeks
+	// 	const mintingBuffer = 86400;
+	// 	const secondsInWeek = 604800;
+	// 	const inflationStartDate = 1551830400;
+	// 	currentLastMintEvent =
+	// 		inflationStartDate + currentWeekOfInflation * secondsInWeek + mintingBuffer;
+	// } catch (err) {
+	// 	if (network !== 'local') {
+	// 		currentSynthetixSupply = w3utils.toWei((100e6).toString());
+	// 		currentWeekOfInflation = 0;
+	// 		currentLastMintEvent = 0;
+	// 	} else {
+	// 		console.error(
+	// 			red(
+	// 				'Cannot connect to existing Synthetix contract. Please double check the deploymentPath is correct for the network allocated'
+	// 			)
+	// 		);
+	// 		process.exitCode = 1;
+	// 		return;
+	// 	}
+	// }
+	currentExchangeFee = w3utils.toWei('0.003'.toString())
 
-		// current weekly inflation 75m / 52
-		const weeklyInflation = w3utils.toBN(w3utils.toWei((75e6 / 52).toString()));
-		currentWeekOfInflation = inflationSupplyToDate.div(weeklyInflation);
+	// try {
+	// 	const oldFeePool = getExistingContract({ contract: 'FeePool' });
+	// 	currentExchangeFee = await oldFeePool.methods.exchangeFeeRate().call();
+	// } catch (err) {
+	// 	if (network !== 'local') {
+	// 		currentExchangeFee = w3utils.toWei('0.003'.toString());
+	// 	} else {
+	// 		console.error(
+	// 			red(
+	// 				'Cannot connect to existing FeePool contract. Please double check the deploymentPath is correct for the network allocated'
+	// 			)
+	// 		);
+	// 		process.exitCode = 1;
+	// 		return;
+	// 	}
+	// }
 
-		// Check result is > 0 else set to 0 for currentWeek
-		currentWeekOfInflation = currentWeekOfInflation.gt(w3utils.toBN('0'))
-			? currentWeekOfInflation.toNumber()
-			: 0;
-
-		// Calculate lastMintEvent as Inflation start date + number of weeks issued * secs in weeks
-		const mintingBuffer = 86400;
-		const secondsInWeek = 604800;
-		const inflationStartDate = 1551830400;
-		currentLastMintEvent =
-			inflationStartDate + currentWeekOfInflation * secondsInWeek + mintingBuffer;
-	} catch (err) {
-		if (network !== 'local') {
-			currentSynthetixSupply = w3utils.toWei((100e6).toString());
-			currentWeekOfInflation = 0;
-			currentLastMintEvent = 0;
-		} else {
-			console.error(
-				red(
-					'Cannot connect to existing Synthetix contract. Please double check the deploymentPath is correct for the network allocated'
-				)
-			);
-			process.exitCode = 1;
-			return;
-		}
-	}
-
-	try {
-		const oldFeePool = getExistingContract({ contract: 'FeePool' });
-		currentExchangeFee = await oldFeePool.methods.exchangeFeeRate().call();
-	} catch (err) {
-		if (network !== 'local') {
-			currentExchangeFee = w3utils.toWei('0.003'.toString());
-		} else {
-			console.error(
-				red(
-					'Cannot connect to existing FeePool contract. Please double check the deploymentPath is correct for the network allocated'
-				)
-			);
-			process.exitCode = 1;
-			return;
-		}
-	}
-
+	currentSynthetixPrice = w3utils.toWei('0.02');
+	oracleExrates = account;
+	oldExrates = undefined; // unset to signify that a fresh one will be deployed
 	// 获取snx初始价格0.2ETH
-	try {
-		oldExrates = getExistingContract({ contract: 'ExchangeRates' });
-		currentSynthetixPrice = await oldExrates.methods.rateForCurrency(toBytes32('SNX')).call();
-		if (!oracleExrates) {
-			oracleExrates = await oldExrates.methods.oracle().call();
-		}
-	} catch (err) {
-		if (network !== 'local') {
-			// TODO NOTE: huobi now lamb price
-			currentSynthetixPrice = w3utils.toWei('0.02');
-			oracleExrates = account;
-			oldExrates = undefined; // unset to signify that a fresh one will be deployed
-		} else {
-			console.error(
-				red(
-					'Cannot connect to existing ExchangeRates contract. Please double check the deploymentPath is correct for the network allocated'
-				)
-			);
-			process.exitCode = 1;
-			return;
-		}
-	}
+	// try {
+	// 	oldExrates = getExistingContract({ contract: 'ExchangeRates' });
+	// 	currentSynthetixPrice = await oldExrates.methods.rateForCurrency(toBytes32('sLAMB')).call();
+	// 	if (!oracleExrates) {
+	// 		oracleExrates = await oldExrates.methods.oracle().call();
+	// 	}
+	// } catch (err) {
+	// 	if (network !== 'local') {
+	// 		// TODO NOTE: huobi now lamb price
+	// 		currentSynthetixPrice = w3utils.toWei('0.02');
+	// 		oracleExrates = account;
+	// 		oldExrates = undefined; // unset to signify that a fresh one will be deployed
+	// 	} else {
+	// 		console.error(
+	// 			red(
+	// 				'Cannot connect to existing ExchangeRates contract. Please double check the deploymentPath is correct for the network allocated'
+	// 			)
+	// 		);
+	// 		process.exitCode = 1;
+	// 		return;
+	// 	}
+	// }
 
 	for (const address of [account, oracleExrates]) {
 		if (!w3utils.isAddress(address)) {
@@ -320,7 +328,10 @@ const deploy = async ({
 			name,
 			address,
 			source,
-			link: `https://scan-testnet.hecochain.com/address/${
+			// link: `https://scan-testnet.hecochain.com/address/${
+			// 	deployer.deployedContracts[name].options.address
+			// 	}`,
+			link: `https://${network !== 'mainnet' ? network + '.' : ''}etherscan.io/address/${
 				deployer.deployedContracts[name].options.address
 				}`,
 			timestamp,
@@ -402,7 +413,7 @@ const deploy = async ({
 	// TODO mainnet -> huobi
 	// Set exchangeRates.stalePeriod to 1 sec if mainnet
 	// TODO 如果是火币网络,直接将stalePeriod设置为1秒
-	if (exchangeRates && config['ExchangeRates'].deploy && network === 'huobi') {
+	if (exchangeRates && config['ExchangeRates'].deploy && network === 'ropsten') { // TODO
 		const rateStalePeriod = 100000;
 		await runStep({
 			contract: 'ExchangeRates',
@@ -587,7 +598,8 @@ const deploy = async ({
 			args: [
 					account,
 					addressOf(synthetix),
-				 "0xf214a4639dd86c98e0420c7c4dbeb324027224de", //TODO modify mainnet
+				 "0xf214a4639dd86c98e0420c7c4dbeb324027224de", //TODO huobi test net lamb erc20
+					// "0x0830201bd8Ec7727a8487D073f54D7F472262661"
 			],
 	})
 
@@ -595,7 +607,8 @@ const deploy = async ({
 		name: 'SynthetixReward',
 		args: [
 				account,
-				"0xf214a4639dd86c98e0420c7c4dbeb324027224de",
+				// "0x0830201bd8Ec7727a8487D073f54D7F472262661",
+				"0xf214a4639dd86c98e0420c7c4dbeb324027224de", //TODO huobi test net lamb erc20
 				addressOf(synthetixState),
 				addressOf(feePool),
 		]
@@ -839,8 +852,8 @@ const deploy = async ({
 		let originalTotalSupply = 0;
 		if (synthConfig.deploy) {
 			try {
-				const oldSynth = getExistingContract({ contract: `Synth${currencyKey}` });
-				originalTotalSupply = await oldSynth.methods.totalSupply().call();
+				// const oldSynth = getExistingContract({ contract: `Synth${currencyKey}` });
+				// originalTotalSupply = await oldSynth.methods.totalSupply().call();
 			} catch (err) {
 				if (network === 'local') {
 					// only throw if not local - allows local environments to handle both new
@@ -1283,3 +1296,6 @@ module.exports = {
 			.option('-y, --yes', 'Dont prompt, just reply yes.')
 			.action(deploy),
 };
+
+// node publish build
+// node publish deploy -n ropsten -d publish/deployed/ropsten -g 20

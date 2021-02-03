@@ -3,61 +3,61 @@
 		"deploy": false
 	},
 	"EscrowChecker": {
-		"deploy": false
+		"deploy": true
 	},
 	"ExchangeRates": {
-		"deploy": false
+		"deploy": true
 	},
 	"Exchanger": {
-		"deploy": false
+		"deploy": true
 	},
 	"ExchangeState": {
-		"deploy": false
+		"deploy": true
 	},
 	"FeePool": {
-		"deploy": false
+		"deploy": true
 	},
 	"FeePoolState": {
-		"deploy": false
+		"deploy": true
 	},
 	"FeePoolEternalStorage": {
-		"deploy": false
+		"deploy": true
 	},
 	"DelegateApprovals": {
-		"deploy": false
+		"deploy": true
 	},
 	"Issuer": {
-		"deploy": false
+		"deploy": true
 	},
 	"Synthetix": {
-		"deploy": false
+		"deploy": true
 	},
 	"SynthetixEscrow": {
-		"deploy": false
+		"deploy": true
 	},
 	"RewardEscrow": {
-		"deploy": false
+		"deploy": true
 	},
 	"RewardsDistribution": {
-		"deploy": false
+		"deploy": true
 	},
 	"SynthetixState": {
-		"deploy": false
+		"deploy": true
 	},
 	"SynthtUSD": {
-		"deploy": false
+		"deploy": true
 	},
 	"ProxyERC20": {
-		"deploy": false
+		"deploy": true
 	},
 	"ProxyFeePool": {
-		"deploy": false
+		"deploy": true
 	},
 	"ProxySynthetix": {
-		"deploy": false
+		"deploy": true
 	},
 	"ProxytUSD": {
-		"deploy": false
+		"deploy": true
 	},
 	"SafeDecimalMath": {
 		"deploy": false
@@ -66,18 +66,18 @@
 		"deploy": false
 	},
 	"TokenStateSynthetix": {
-		"deploy": false
+		"deploy": true
 	},
 	"TokenStatetUSD": {
-		"deploy": false
+		"deploy": true
 	},
 	"ProxyERC20tUSD": {
-		"deploy": false
+		"deploy": true
 	},
 	"SynthetixProxy": {
-		"deploy": false
+		"deploy": true
 	},
-    "SynthetixReward": {
-      "deploy": true
-    }
+	"SynthetixReward": {
+		"deploy": true
+	}
 }
