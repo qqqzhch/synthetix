@@ -20,4 +20,6 @@ contract IFeePool {
     function setRewardsToDistribute(uint amount) external;
 
     function effectiveDebtRatioForLastCloseIndex(address account, uint closingDebtIndex) external view returns (uint);
+
+    function isFeesClaimable(address account) public view returns (bool);
 }

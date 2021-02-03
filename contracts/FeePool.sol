@@ -778,6 +778,8 @@ contract FeePool is Proxyable, SelfDestructible, LimitedSetup, MixinResolver {
     }
 
     function effectiveDebtRatioForLastCloseIndex(address account, uint closingDebtIndex) external view returns (uint) {
+        uint ownershipPercentage;
+        uint debtEntryIndex;
         (ownershipPercentage, debtEntryIndex) = feePoolState().applicableIssuanceData(account, closingDebtIndex);
 
         // internal function will check closingDebtIndex has corresponding debtLedger entry

@@ -18,7 +18,7 @@ contract SynthetixReward is Owned {
     address public feePool;
 
     uint public lastCloseIndex;
-    uint public MIN_CLOSE_PERIOD_TIME = 30 days;
+    uint public CLOSE_PERIOD_DURATION = 30 days;
     uint public lastCloseTime;
 
     // cache
@@ -35,8 +35,8 @@ contract SynthetixReward is Owned {
         lastCloseIndex = 0;
     }
 
-    function setPeriodTime(uint _period) external onlyOwner {
-        MIN_CLOSE_PERIOD_TIME = _period;
+    function setPeriodDuration(uint _period) external onlyOwner {
+        CLOSE_PERIOD_DURATION = _period;
     }
 
     function setErcTFI(address _ercTFI) external onlyOwner {
@@ -55,30 +55,38 @@ contract SynthetixReward is Owned {
     }
 
     function closePeriodReward() external onlyOwner {
-        require(block.timestamp >= lastCloseTime.add(MIN_CLOSE_PERIOD_TIME), "too early close reward period");
-        uint length = ISynthetixState(synthetixState).debtLedgerLength();
-        require(length > 0, "have no ledger");
-        uint lastIndex = length - 1;
-        lastCloseIndex = lastIndex;
+        require(block.timestamp >= lastCloseTime.add(CLOSE_PERIOD_DURATION), "too early close reward period");
+        lastCloseTime = block.timestamp;
+
         uint periodReward = IERC20(ercTFI).balanceOf(address(this));
         require(periodReward > 0, "TFI reward token must greater 0");
         totalRewardPeriod = periodReward;
-        lastCloseTime = block.timestamp;
+
+        uint length = ISynthetixState(synthetixState).debtLedgerLength();
+        require(length > 0, "have no ledger");
+        lastCloseIndex = length - 1;
     }
 
-    function settleReward() external {
+    function claimReward() external {
         require(rewardIndex[msg.sender] < lastCloseIndex, "already reward");
+
+        require(IFeePool(feePool).isFeesClaimable(msg.sender), "staking ratio is too low to claim reward");
+
+        uint rewardAmount = getUnClaimedReward(msg.sender);
+        IERC20(ercTFI).transfer(msg.sender, rewardAmount);
+        rewardIndex[msg.sender] = lastCloseIndex;
+    }
+
+    function getUnClaimedReward(address _account) public view returns (uint) {
         uint remainderAmount = IERC20(ercTFI).balanceOf(address(this));
-        require(remainderAmount > 0, "not enough reward token");
+        require(remainderAmount > 0, "no reward token distribution");
 
-        uint rewardPercent = IFeePool(feePool).effectiveDebtRatioForLastCloseIndex(msg.sender, lastCloseIndex);
+        uint rewardPercent = IFeePool(feePool).effectiveDebtRatioForLastCloseIndex(_account, lastCloseIndex);
 
-        // transfer
         uint rewardAmount = rewardPercent.multiplyDecimal(totalRewardPeriod).preciseDecimalToDecimal();
         if (remainderAmount < rewardAmount) {
             rewardAmount = remainderAmount;
         }
-        IERC20(ercTFI).transfer(msg.sender, rewardAmount);
-        rewardIndex[msg.sender] = lastCloseIndex;
+        return rewardAmount;
     }
 }
