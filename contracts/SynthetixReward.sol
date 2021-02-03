@@ -26,7 +26,7 @@ contract SynthetixReward is MixinResolver {
 
     mapping(address => uint) public rewardIndex;
 
-    constructor (address _owner, address _resolver , address _ercTFI) public MixinResolver(_owner, _resolver) {
+    constructor (address _owner, address _resolver, address _ercTFI) public MixinResolver(_owner, _resolver) {
         ercTFI = _ercTFI;
         startTime = uint64(now);
         startIndex = 0;
