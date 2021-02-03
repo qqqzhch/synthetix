@@ -9,8 +9,7 @@ import "./MixinResolver.sol";
 import "./interfaces/ISynthetixState.sol";
 import "./interfaces/IFeePool.sol";
 import "./interfaces/IIssuer.sol";
-import "./SynthetixRewardState.sol";
-
+import "./interfaces/ISynthetixRewardState.sol";
 
 contract SynthetixReward is MixinResolver {
     using SafeMath for uint;
@@ -44,8 +43,8 @@ contract SynthetixReward is MixinResolver {
         return IIssuer(resolver.requireAndGetAddress("Issuer", "Missing Issuer address"));
     }
 
-    function synthetixRewardState() internal view returns (SynthetixRewardState) {
-        return SynthetixRewardState(resolver.requireAndGetAddress("SynthetixRewardState", "Missing Issuer address"));
+    function synthetixRewardState() internal view returns (ISynthetixRewardState) {
+        return ISynthetixRewardState(resolver.requireAndGetAddress("SynthetixRewardState", "Missing Issuer address"));
     }
 
     function setPeriodDuration(uint _period) external onlyOwner {
@@ -65,7 +64,7 @@ contract SynthetixReward is MixinResolver {
         require(periodReward > 0, "TFI reward token must greater 0");
         totalRewardPeriod = periodReward;
 
-        uint length = synthetixState.debtLedgerLength();
+        uint length = synthetixState().debtLedgerLength();
         require(length > 0, "have no ledger");
         startIndex = length;
     }
