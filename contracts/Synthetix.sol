@@ -306,7 +306,7 @@ contract Synthetix is ExternStateToken, MixinResolver {
         uint totalOwnedSynthetix = collateral(_issuer);
         if (totalOwnedSynthetix == 0) return 0;
 
-        uint debtBalance = debtBalanceOf(_issuer, "");
+        uint debtBalance = debtBalanceOf(_issuer, "sLAMB");
         return debtBalance.divideDecimalRound(totalOwnedSynthetix);
     }
 
