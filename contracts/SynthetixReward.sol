@@ -72,8 +72,6 @@ contract SynthetixReward is MixinResolver {
     function claimReward() external {
         require(startIndex > 0, "system just starts, no reward period closed");
 
-        require(rewardIndex[msg.sender] < startIndex, "already reward");
-
         require(feePool().isFeesClaimable(msg.sender), "staking ratio is too low to claim reward");
 
         uint rewardAmount = getUnClaimedReward(msg.sender);
@@ -86,6 +84,8 @@ contract SynthetixReward is MixinResolver {
 
     function getUnClaimedReward(address _account) public view returns (uint) {
         if (startIndex == 0) return 0;
+
+        require(rewardIndex[msg.sender] < startIndex, "already rewarded");
 
         uint remainderAmount = IERC20(ercTFI).balanceOf(address(this));
         require(remainderAmount > 0, "no reward token distribution");
