@@ -7,6 +7,7 @@ import "./interfaces/ISynthetix.sol";
 import "./interfaces/IFeePool.sol";
 import "./interfaces/ISynthetixState.sol";
 import "./interfaces/IExchanger.sol";
+import "./interfaces/ISynthetixReward.sol";
 
 
 contract Issuer is MixinResolver {
@@ -32,6 +33,10 @@ contract Issuer is MixinResolver {
 
     function feePool() internal view returns (IFeePool) {
         return IFeePool(resolver.requireAndGetAddress("FeePool", "Missing FeePool address"));
+    }
+
+    function synthetixReward() internal view returns (ISynthetixReward) {
+        return ISynthetixReward(resolver.requireAndGetAddress("SynthetixReward", "Missing SynthetixReward address"));
     }
 
     /* ========== SETTERS ========== */
@@ -117,6 +122,7 @@ contract Issuer is MixinResolver {
         (initialDebtOwnership, debtEntryIndex) = synthetixState().issuanceData(from);
 
         feePool().appendAccountIssuanceRecord(from, initialDebtOwnership, debtEntryIndex);
+        synthetixReward().appendAccountIssuanceRecord(from, initialDebtOwnership, debtEntryIndex);
     }
 
     /**
