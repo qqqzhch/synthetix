@@ -79,7 +79,7 @@ contract SynthetixReward is MixinResolver {
 
         uint rewardAmount = getUnClaimedReward(msg.sender);
 
-        if (rewardAmount > 0){
+        if (rewardAmount > 0) {
             IERC20(ercTFI).transfer(msg.sender, rewardAmount);
             rewardIndex[msg.sender] = startIndex;
         }
@@ -133,5 +133,10 @@ contract SynthetixReward is MixinResolver {
             .multiplyDecimalRoundPrecise(ownershipPercentage);
 
         return debtOwnership;
+    }
+
+    modifier onlyIssuer {
+        require(msg.sender == address(issuer()), "SynthetixReward: Only Issuer Authorised");
+        _;
     }
 }
