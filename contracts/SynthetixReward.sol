@@ -85,10 +85,10 @@ contract SynthetixReward is MixinResolver {
     function getUnClaimedReward(address _account) public view returns (uint) {
         if (startIndex == 0) return 0;
 
-        require(rewardIndex[msg.sender] < startIndex, "already rewarded");
+        if (rewardIndex[msg.sender] >= startIndex) return 0;
 
         uint remainderAmount = IERC20(ercTFI).balanceOf(address(this));
-        require(remainderAmount > 0, "no reward token distribution");
+        if (remainderAmount == 0) return 0;
 
         uint rewardPercent = effectiveDebtRatioForLastCloseIndex(_account, startIndex.sub(1));
         if (rewardPercent == 0) return 0;
