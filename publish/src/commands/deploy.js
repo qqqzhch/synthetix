@@ -19,6 +19,7 @@ const {
 } = require('../constants');
 
 const {
+	ensureERC20,
 	ensureNetwork,
 	ensureDeploymentPath,
 	loadAndCheckRequiredSources,
@@ -64,9 +65,9 @@ const deploy = async ({
 						  yes,
 						  dryRun = false,
 					  } = {}) => {
+	ensureERC20();
 	ensureNetwork(network);
 	ensureDeploymentPath(deploymentPath);
-
 	const {
 		config,
 		configFile,
@@ -87,7 +88,7 @@ const deploy = async ({
 		return !config[name].deploy && (!deployment.targets[name] || !deployment.targets[name].address);
 	});
 
-	if (missingDeployments.length) {
+	if (missingDeployments.length && network !== 'local') {
 		throw Error(
 			`Cannot use existing contracts for deployment as addresses not found for the following contracts on ${network}:\n` +
 			missingDeployments.join('\n') +
@@ -247,17 +248,17 @@ const deploy = async ({
 		.map(({ name }) => name);
 
 	let aggregatedPriceResults = 'N/A';
-
-	if (oldExrates && network !== 'local') {
-		const padding = '\n\t\t\t\t';
-		const aggResults = await checkAggregatorPrices({
-			network,
-			providerUrl,
-			synths,
-			oldExrates,
-		});
-		aggregatedPriceResults = padding + aggResults.join(padding);
-	}
+	//
+	// if (oldExrates && network !== 'local') {
+	// 	const padding = '\n\t\t\t\t';
+	// 	const aggResults = await checkAggregatorPrices({
+	// 		network,
+	// 		providerUrl,
+	// 		synths,
+	// 		oldExrates,
+	// 	});
+	// 	aggregatedPriceResults = padding + aggResults.join(padding);
+	// }
 
 	parameterNotice({
 		'Dry Run': dryRun ? green('true') : yellow('⚠ NO'),
@@ -328,12 +329,9 @@ const deploy = async ({
 			name,
 			address,
 			source,
-			link: `https://scan-testnet.hecochain.com/address/${
+			link: `${etherscanLinkPrefix}/address/${
 				deployer.deployedContracts[name].options.address
 				}`,
-			// link: `https://${network !== 'mainnet' ? network + '.' : ''}etherscan.io/address/${
-			// 	deployer.deployedContracts[name].options.address
-			// 	}`,
 			timestamp,
 			txn,
 			network,
@@ -413,7 +411,7 @@ const deploy = async ({
 	// TODO mainnet -> huobi
 	// Set exchangeRates.stalePeriod to 1 sec if mainnet
 	// TODO 如果是火币网络,直接将stalePeriod设置为1秒
-	if (exchangeRates && config['ExchangeRates'].deploy && network === 'ropsten') { // TODO
+	if (exchangeRates && config['ExchangeRates'].deploy) { // TODO
 		const rateStalePeriod = 100000;
 		await runStep({
 			contract: 'ExchangeRates',
@@ -598,7 +596,8 @@ const deploy = async ({
 			args: [
 					account,
 					addressOf(synthetix),
-				 "0xf214a4639dd86c98e0420c7c4dbeb324027224de", //TODO huobi test net lamb erc20
+					//TODO huobi test net lamb erc20
+					process.env.LAMBADDRESS,
 					// "0x0830201bd8Ec7727a8487D073f54D7F472262661"
 			],
 	})
@@ -609,7 +608,8 @@ const deploy = async ({
 				account,
 				// "0x0830201bd8Ec7727a8487D073f54D7F472262661",
 				resolverAddress,
-				"0xf214a4639dd86c98e0420c7c4dbeb324027224de", //TODO huobi test net lamb erc20
+				//TODO huobi test erc20, if mainnet, please use TFI ERC20 Token
+				process.env.TFIADDRESS,
 		]
 	})
 
@@ -826,7 +826,7 @@ const deploy = async ({
 		});
 
 		// tUSD proxy is used by Kucoin and Bittrex thus requires proxy / integration proxy to be set
-		const synthProxyIsLegacy = currencyKey === 'tUSD' && network !== 'local';
+		const synthProxyIsLegacy = currencyKey === 'tUSD';
 
 		const proxyForSynth = await deployContract({
 			name: `Proxy${currencyKey}`,
@@ -1308,6 +1308,9 @@ module.exports = {
 			.action(deploy),
 };
 
+
+
 // node publish build
 // node publish deploy -n ropsten -d publish/deployed/ropsten -g 20
-// node publish deploy -n huobi -d publish/deployed/huobi -g 20
+// node publish deploy -n heco_test -d publish/deployed/heco_test -g 20
+// node publish deploy -n local -d publish/deployed/local -g 20

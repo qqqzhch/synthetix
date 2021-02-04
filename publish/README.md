@@ -163,3 +163,64 @@ node publish generate-token-list -d publish/deployed/mainnet
 ```bash
 node publish generate-token-list -d publish/deployed/rinkeby/ > token-list.json
 ```
+
+
+### LOCAL 
+
+#### Install ganache-cli
+
+```
+npm install -g ganache-cli
+```
+
+#### Start Local Env
+
+```
+ganache-cli -l 8000000
+
+Ganache CLI v6.12.1 (ganache-core: 2.13.1)
+
+Available Accounts
+==================
+(0) 0xf35F9388d2343115cE9bb73F9c613Db5a3388E20 (100 ETH)
+(1) 0xdA1830eF164B2BE1DccCCbCe1b9D0e1c3450A006 (100 ETH)
+(2) 0x9888Cc3eAF922F293F83cB76676CE8671BD54C0e (100 ETH)
+(3) 0x4AF2337aD2ae277Ed84Fd04DCdc431a543c7A84f (100 ETH)
+(4) 0x3eB13ff12e389B5aBE0e19E667C1D441c8620cE6 (100 ETH)
+(5) 0x8b2987354B9BA0175ed3E50d363eaD144FE648e9 (100 ETH)
+(6) 0x88d5d6c04ECa1A4D680A97631415De6aD87049D5 (100 ETH)
+(7) 0x2Ae9a44dCE8BFB26178fB9D90b1bF0F864806844 (100 ETH)
+(8) 0x007eDddca4673E08E59278980Fd7b4530283c8fb (100 ETH)
+(9) 0xF5A9FBA5f86eE5dBa94aFD3e1cf2bbBbB0C09f3B (100 ETH)
+
+Private Keys
+==================
+(0) 0xde695dd96b9dec4c42afc63790f9e200b573856ace6a21434464ac2fbb1fc2b3
+(1) 0x00c4b434a7ef564525f698b3d0a249b59516387f8735e0c727b108425dfc038d
+(2) 0xce859b38bec4b9d554d20be8f04386531590f73991bbaba5e7e1079a69f064ff
+(3) 0xa03cf47483b2ed87b4f17e528c0bf88ec726e7c28389bab15355a09e9e4341e9
+(4) 0xd7a6341a17d360d6e320e42c1f58cd265931d54520dede3be89477b69d1ec32d
+(5) 0x8b7352f18372f3fd07ce71c9c5347f904ac20bdd61acc5a90d61656ee8554d9e
+(6) 0x621df0458aab9ff30684e19c9bf732c3ab706945c1b91a57c239eafd4164d689
+(7) 0x11e0cff15324ddedbc1f670254bdab0a0b0aae633847f39239e5237b2ca8b8a3
+(8) 0xdac073aee6c24b48fe72826967944fb47ecda6678706241861880ea09230e5d1
+(9) 0x99ed824ef83cd0517527763f7f51a225ddc61211827cb94dbb0efd2a0bedb091
+```
+
+#### build and deploy contract
+
+```
+node publish build
+
+node publish deploy -n local -d publish/deployed/local -g 20
+```
+
+#### EVN FILE
+
+```
+INFURA_PROJECT_ID=b9b55c7190734c17938d9dd1f301f2d6
+DEPLOY_PRIVATE_KEY=0xde695dd96b9dec4c42afc63790f9e200b573856ace6a21434464ac2fbb1fc2b3
+LAMBADDRESS=0xf214a4639dd86c98e0420c7c4dbeb324027224de // example address, should modify
+TFIADDRESS=0xf214a4639dd86c98e0420c7c4dbeb324027224de // example address, should modify
+```
+

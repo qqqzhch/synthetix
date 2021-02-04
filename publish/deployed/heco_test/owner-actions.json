@@ -1,0 +1,8 @@
+{
+	"SynthetixEscrow.setHavven(Synthetix)": {
+		"target": "0x71bc3624121440da9504DF5fa3b160a256c39a6E",
+		"action": "setHavven(0xB7fd534c931f576099e0b702635Bd0989102A575)",
+		"complete": false,
+		"link": "https://huobi.etherscan.io/address/0x71bc3624121440da9504DF5fa3b160a256c39a6E#writeContract"
+	}
+}
