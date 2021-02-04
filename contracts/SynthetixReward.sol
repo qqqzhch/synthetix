@@ -79,11 +79,10 @@ contract SynthetixReward is MixinResolver {
         require(feePool().isFeesClaimable(msg.sender), "staking ratio is too low to claim reward");
 
         uint rewardAmount = getUnClaimedReward(msg.sender);
+        require(rewardAmount > 0, "no reward currently");
 
-        if (rewardAmount > 0) {
-            IERC20(ercTFI).transfer(msg.sender, rewardAmount);
-            rewardIndex[msg.sender] = periodID - 1;
-        }
+        IERC20(ercTFI).transfer(msg.sender, rewardAmount);
+        rewardIndex[msg.sender] = periodID - 1;
     }
 
     function getUnClaimedReward(address _account) public view returns (uint) {
