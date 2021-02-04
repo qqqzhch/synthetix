@@ -23,12 +23,14 @@ contract SynthetixReward is MixinResolver {
     // cache
     uint public totalRewardPeriod;
 
+    uint public periodID;
     mapping(address => uint) public rewardIndex;
 
     constructor (address _owner, address _resolver, address _ercTFI) public MixinResolver(_owner, _resolver) {
         ercTFI = _ercTFI;
         startTime = uint64(now);
         startIndex = 0;
+        periodID = 1;
     }
 
     function synthetixState() internal view returns (ISynthetixState) {
@@ -67,10 +69,12 @@ contract SynthetixReward is MixinResolver {
         uint length = synthetixState().debtLedgerLength();
         require(length > 0, "have no ledger");
         startIndex = length;
+
+        periodID += 1;
     }
 
     function claimReward() external {
-        require(startIndex > 0, "system just starts, no reward period closed");
+        require(startIndex > 0 && periodID > 1, "system just starts, no reward period closed");
 
         require(feePool().isFeesClaimable(msg.sender), "staking ratio is too low to claim reward");
 
@@ -78,14 +82,14 @@ contract SynthetixReward is MixinResolver {
 
         if (rewardAmount > 0) {
             IERC20(ercTFI).transfer(msg.sender, rewardAmount);
-            rewardIndex[msg.sender] = startIndex;
+            rewardIndex[msg.sender] = periodID - 1;
         }
     }
 
     function getUnClaimedReward(address _account) public view returns (uint) {
-        if (startIndex == 0) return 0;
+        if (startIndex == 0 || periodID == 1) return 0;
 
-        if (rewardIndex[msg.sender] >= startIndex) return 0;
+        if (rewardIndex[msg.sender] = (periodID - 1)) return 0;
 
         uint remainderAmount = IERC20(ercTFI).balanceOf(address(this));
         if (remainderAmount == 0) return 0;
