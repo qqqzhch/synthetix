@@ -89,7 +89,7 @@ contract SynthetixReward is MixinResolver {
     function getUnClaimedReward(address _account) public view returns (uint) {
         if (startIndex == 0 || periodID == 1) return 0;
 
-        if (rewardIndex[msg.sender] = (periodID - 1)) return 0;
+        if (rewardIndex[msg.sender] == (periodID - 1)) return 0;
 
         uint remainderAmount = IERC20(ercTFI).balanceOf(address(this));
         if (remainderAmount == 0) return 0;
