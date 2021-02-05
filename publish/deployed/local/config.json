@@ -82,5 +82,8 @@
 	},
 	"SynthetixRewardState": {
 		"deploy": true
+	},
+	"TestToken": {
+		"deploy": true
 	}
 }

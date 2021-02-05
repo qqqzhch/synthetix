@@ -13,7 +13,10 @@ module.exports = {
 	'Synthetix.sol': {
 		runs: 200,
     },
-    'SynthetixReward.sol': {
+	'SynthetixReward.sol': {
+	runs: 200,
+	},
+	'TestToken.sol': {
 		runs: 200,
-    },
+	}
 };

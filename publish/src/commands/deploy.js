@@ -590,6 +590,35 @@ const deploy = async ({
 	// 		writeArg: '0xf214a4639dd86c98e0420c7c4dbeb324027224de',
 	// 	});
     // }
+	let LAMB = process.env.LAMBADDRESS
+	let TFI = process.env.TFIADDRESS
+
+	let testToken
+	if (network === 'local') {
+		testToken = await deployContract({
+			name: 'TestToken',
+		})
+
+		if (testToken) {
+			LAMB = addressOf(testToken)
+			TFI = addressOf(testToken)
+			console.log(
+					gray(`local test net LAMB token address is ${LAMB}`)
+			);
+
+			console.log(
+					gray(`mint test net LAMB token to ${account} 1000000000`)
+			);
+
+			await runStep({
+				contract: 'TestToken',
+				target: testToken,
+				write: 'mint',
+				writeArg: [account, w3utils.toWei('1000000000')],
+			});
+		}
+	}
+
 
 	const synthetixProxy = await deployContract({
 			name: 'SynthetixProxy',
@@ -597,10 +626,23 @@ const deploy = async ({
 					account,
 					addressOf(synthetix),
 					//TODO huobi test net lamb erc20
-					process.env.LAMBADDRESS,
+					LAMB,
 					// "0x0830201bd8Ec7727a8487D073f54D7F472262661"
 			],
 	})
+
+	if (network === 'local' && synthetixProxy) {
+		let approveAmount = 10000
+		console.log(
+				gray(`approve synthetixProxy ${approveAmount} Test token`)
+		);
+		await runStep({
+			contract: 'TestToken',
+			target: testToken,
+			write: 'approve',
+			writeArg: [addressOf(synthetixProxy), w3utils.toWei(approveAmount.toString())],
+		});
+	}
 
 	const synthetixReward = await deployContract({
 		name: 'SynthetixReward',
@@ -609,7 +651,7 @@ const deploy = async ({
 				// "0x0830201bd8Ec7727a8487D073f54D7F472262661",
 				resolverAddress,
 				//TODO huobi test erc20, if mainnet, please use TFI ERC20 Token
-				process.env.TFIADDRESS,
+				TFI,
 		]
 	})
 
@@ -1313,4 +1355,4 @@ module.exports = {
 // node publish build
 // node publish deploy -n ropsten -d publish/deployed/ropsten -g 30
 // node publish deploy -n heco_test -d publish/deployed/heco_test -g 20
-// node publish deploy -n local -d publish/deployed/local -g 20
+// node publish deploy -n local -d publish/deployed/local -g 20 --private-key 0xff51594f62ea01cc3334d133a159b4facd2bf8f746798baaca2dc16f292e96bc

@@ -24,6 +24,12 @@ const CONTRACT_OVERRIDES = require('../contract-overrides');
 const build = async ({ buildPath = DEFAULTS.buildPath, showWarnings, showContractSize } = {}) => {
 	console.log(gray('Starting build...'));
 
+	if (fs.existsSync(buildPath)) {
+		console.log(red(`remove old build file, file path is ${buildPath}`))
+		fs.rmdirSync(buildPath, { recursive: true })
+		console.log(green(`remove ${buildPath} success`))
+	}
+
 	if (!fs.existsSync(buildPath)) {
 		fs.mkdirSync(buildPath);
 	}
