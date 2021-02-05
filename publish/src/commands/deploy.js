@@ -1311,6 +1311,6 @@ module.exports = {
 
 
 // node publish build
-// node publish deploy -n ropsten -d publish/deployed/ropsten -g 20
+// node publish deploy -n ropsten -d publish/deployed/ropsten -g 30
 // node publish deploy -n heco_test -d publish/deployed/heco_test -g 20
 // node publish deploy -n local -d publish/deployed/local -g 20

@@ -24,9 +24,9 @@ const ensureERC20 = () => {
 }
 
 const ensureNetwork = network => {
-	if (!/^(local|kovan|rinkeby|ropsten|mainnet|huobi)$/.test(network)) {
+	if (!/^(local|kovan|rinkeby|ropsten|mainnet|heco_test|heco)$/.test(network)) {
 		throw Error(
-			`Invalid network name of "${network}" supplied. Must be one of local, kovan, rinkeby, ropsten or mainnet or huobi`
+			`Invalid network name of "${network}" supplied. Must be one of local, kovan, rinkeby, ropsten or mainnet or heco or heco_test`
 		);
 	}
 };
